@@ -25,6 +25,8 @@ var connection = new autobahn.Connection({
   realm: 'realm1'
 });
 
+var uidCounter = 0;
+var uids = [];
 function main(session) {
   // User login
   //
@@ -42,12 +44,14 @@ function main(session) {
     
     console.log("User "+user.uname+" is logged in.");
     
+    session.publish('com.google.boat.onlogin', [user.uid]);
     return user;
   }
 
   // Register new devices
   //
   var register = function() {
+    console.log("register user " + uidCounter);
     uids[uidCounter] = {
       uid: uidCounter,
       uname: "guest" + uidCounter,
@@ -71,7 +75,6 @@ function main(session) {
 
   // REGISTER RPC
   //
-  session.register('com.google.boat.submit', move);
   session.register('com.google.boat.login', login);
 
 }

@@ -35,7 +35,7 @@ function main(session) {
    //Note: needs to be localStorage for mobile testing
    uid = sessionStorage.getItem("uid");
    //Log in to the server (and get auto-registered if no uid is present)
-   session.call("com.google.guesswho.login", [uid]).then(
+   session.call("com.google.boat.login", [uid]).then(
       function(user) {
          // Store the uid returned from the server  
          uid = user.uid;
@@ -49,17 +49,25 @@ function main(session) {
    );
 
    // Wire up the guess button
-   var guessButton = $("#submitGuess");
+   var leftButton = $("#move_left");
    //Declare an event handlers
-   guessButton.on('click', function(event) {
-      session.call("com.google.boat.move", [guessInput.val(), Number(uid)]).then(
+   leftButton.on('click', function(event) {
+      session.call("com.google.boat.move", [Number(uid), 0]).then(
+         session.log, session.log
+      );
+   });
+
+   var rightButton = $("#move_right");
+   //Declare an event handlers
+   rightButton.on('click', function(event) {
+      session.call("com.google.boat.move", [Number(uid), 1]).then(
          session.log, session.log
       );
    });
 
    // Subscribe to trending guesses
    // 
-   session.subscribe("com.google.guesswho.onmove",
+   session.subscribe("com.google.boat.onmove",
       function(args) {
          var event = args[0];
          console.log(event);
