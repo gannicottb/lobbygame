@@ -65,12 +65,12 @@ function TestWaveMachine() {
 
   // setup particles
   var psd = new b2ParticleSystemDef();
-  psd.radius = 0.025;
+  psd.radius = 0.05;
   psd.dampingStrength = 0.2;
 
   var particleSystem = world.CreateParticleSystem(psd);
   var box = new b2PolygonShape();
-  box.SetAsBoxXYCenterAngle(3.9, 0.45, new b2Vec2(0, 0.0), 0);
+  box.SetAsBoxXYCenterAngle(3.9, 0.25, new b2Vec2(0, 0.3), 0);
 
   var particleGroupDef = new b2ParticleGroupDef();
   particleGroupDef.shape = box;
@@ -98,16 +98,16 @@ TestWaveMachine.prototype.AddAnimal = function() {
 
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
-  bd.position.Set(0.0, 0.5);
+  bd.position.Set(0.0, 1.0);
   car = world.CreateBody(bd);
-  car.CreateFixtureFromShape(chassis, 1.0);
+  car.CreateFixtureFromShape(chassis, 10.0);
 
   fd = new b2FixtureDef;
   fd.shape = circle;
-  fd.density = 4.0;
+  fd.density = 7.0;
   fd.friction = 0.9;
 
-  bd.position.Set(0.0, 0.435);
+  bd.position.Set(0.0, 0.935);
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
