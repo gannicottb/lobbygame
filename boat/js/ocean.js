@@ -5,7 +5,7 @@ function TestWaveMachine() {
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
-  // this.bd.type = b2_dynamicBody;
+  //this.bd.type = b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
@@ -58,7 +58,7 @@ function TestWaveMachine() {
 
   var particleSystem = world.CreateParticleSystem(psd);
   var box = new b2PolygonShape();
-  box.SetAsBoxXYCenterAngle(3.9, 0.45, new b2Vec2(0, 0.0), 0);
+  box.SetAsBoxXYCenterAngle(3.9, 0.4, new b2Vec2(0, 0.2), 0);
 
   var particleGroupDef = new b2ParticleGroupDef();
   particleGroupDef.shape = box;
@@ -67,14 +67,25 @@ function TestWaveMachine() {
   this.animals = [];
 }
 
+var j = 0;
+
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 60;
   this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
+
+
+  //render animal images
+  for (i = 0; i < this.animals.length; i++) { 
+    var dog_body = this.animals[i];
+    var position = dog_body.GetWorldCenter();
+    draw(position.x, position.y);    
+  }
 }
 
 TestWaveMachine.prototype.AddAnimal = function() {
-  console.log("TestWaveMachine: AddAnimal");
+  console.log("TestWaveMachine: AddAnimal");  
+
   var dog_body = world.CreateBody(this.bd);
   var dog = new b2CircleShape();
   dog.position.Set(0, 0.3);
