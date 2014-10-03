@@ -81,8 +81,6 @@ function TestWaveMachine() {
   this.animals = [];
 }
 
-var j = 0;
-
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 60;
@@ -114,6 +112,8 @@ TestWaveMachine.prototype.Draw = function() {
 }
 
 TestWaveMachine.prototype.AddAnimal = function() {
+  var animal = {};
+
   var chassis = new b2PolygonShape;
   chassis.vertices[0] = new b2Vec2(-0.10, -0.05);
   chassis.vertices[1] = new b2Vec2(0.10, -0.05);
@@ -129,6 +129,8 @@ TestWaveMachine.prototype.AddAnimal = function() {
   car = world.CreateBody(bd);
   car.CreateFixtureFromShape(chassis, 10.0);
 
+  animal.body = car;
+
   fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 7.0;
@@ -137,6 +139,8 @@ TestWaveMachine.prototype.AddAnimal = function() {
   bd.position.Set(0.0, 0.935);
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
+
+  animal.wheel = wheel1;
 
   jd = new b2WheelJointDef;
   var axis = new b2Vec2(0.0, 1.0); // ?? why
@@ -149,14 +153,16 @@ TestWaveMachine.prototype.AddAnimal = function() {
   spring1 =
     jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
 
-  this.animals.push(car);
+  animal.spring = spring1;
+
+  this.animals.push(animal);
   console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
   console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
 
 }
 
 TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
-  var spring = this.animals[animal];
+  var spring = this.animals[animal].spring;
   console.log("animal: " + animal + " direction: " + direction == 0 ? "left" : "right");
   // var angle = this.boat_body.GetAngle();
   // console.log(angle);
