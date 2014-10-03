@@ -9,7 +9,7 @@ function TestWaveMachine() {
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
-  // this.bd.type = b2_dynamicBody;
+  //this.bd.type = b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
@@ -70,7 +70,9 @@ function TestWaveMachine() {
 
   var particleSystem = world.CreateParticleSystem(psd);
   var box = new b2PolygonShape();
+
   box.SetAsBoxXYCenterAngle(3.9, 0.25, new b2Vec2(0, 0.3), 0);
+
 
   var particleGroupDef = new b2ParticleGroupDef();
   particleGroupDef.shape = box;
@@ -79,11 +81,36 @@ function TestWaveMachine() {
   this.animals = [];
 }
 
+var j = 0;
+
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 60;
-  camera.position.x = this.boat_body.GetWorldCenter().x;
   // this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
+  camera.position.x = this.boat_body.GetWorldCenter().x;
+}
+
+TestWaveMachine.prototype.Draw = function() {
+  var canvas = document.getElementById('myCanvas');
+  var ctx = canvas.getContext('2d');
+  if (ctx != null) {
+    //render animal images
+    for (i = 0; i < this.animals.length; i++) {
+      var dog_body = this.animals[i];
+      var position = dog_body.GetWorldCenter();
+
+
+      var image = new Image();
+      image.src = "img/dog.png";
+      console.log("position: " + position.x + ", " + position.y);
+      ctx.drawImage(image, position.x, position.y);
+    }
+
+    var boat_image = new Image();
+    boat_image.src = "img/boat.png";
+    var boat_center = this.boat_body.GetWorldCenter();
+    ctx.drawImage(boat_image, 10 * boat_center.x, 10 * boat_center.y, 10, 5);
+  }
 }
 
 TestWaveMachine.prototype.AddAnimal = function() {
@@ -122,13 +149,15 @@ TestWaveMachine.prototype.AddAnimal = function() {
   spring1 =
     jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
 
-  this.animals.push(spring1);
+  this.animals.push(car);
   console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
   console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
+
 }
 
 TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   var spring = this.animals[animal];
+  console.log("animal: " + animal + " direction: " + direction == 0 ? "left" : "right");
   // var angle = this.boat_body.GetAngle();
   // console.log(angle);
   // var force = direction === 0 ? -0.1 : 0.1;
