@@ -39,7 +39,21 @@ Renderer.prototype.draw = function() {
     var transform = body.GetTransform();
     for (var j = 0; j < maxFixtures; j++) {
       var fixture = body.fixtures[j];
-      fixture.shape.draw(transform);
+      var d = body.GetUserData();
+      if (d != 0 && d != undefined) {
+        r = d >> 16 & 0xFF;
+        g = d >> 8 & 0xFF;
+        b = d & 0xFF;
+        var color = {};
+        color.r = inv255 * r;
+        color.g = inv255 * g;
+        color.b = inv255 * b;
+        console.log("dd" + color.b);
+        fixture.shape.draw2(transform, color);
+      } else {
+        fixture.shape.draw(transform);
+      }
+      
     }
   }
 
@@ -143,13 +157,28 @@ b2CircleShape.prototype.draw = function(transform) {
   renderer.insertCircleVertices(transform, this.radius, center.x, center.y, 0, 0, 0, 5);
 };
 
+b2CircleShape.prototype.draw2 = function(transform, color) {
+  var circlePosition = this.position,
+    center = new b2Vec2(circlePosition.x, circlePosition.y);
+ // b2Vec2.Mul(center, transform, center);
+  renderer.insertCircleVertices(transform, this.radius, center.x, center.y, color.r, color.g, color.b, 5);
+};
+
 b2ChainShape.prototype.draw = function(transform) {
   renderer.transformVerticesAndInsert(this.vertices, transform, 0, 0, 0);
+};
+
+b2ChainShape.prototype.draw2 = function(transform, color) {
+  renderer.transformVerticesAndInsert(this.vertices, transform, color.r, color.g, color.b);
 };
 
 
 b2EdgeShape.prototype.draw = function(transform) {
   renderer.transformAndInsert(this.vertex1, this.vertex2, transform, 0, 0, 0);
+};
+
+b2EdgeShape.prototype.draw2 = function(transform, color) {
+  renderer.transformAndInsert(this.vertex1, this.vertex2, transform, color.r, color.g, color.b);
 };
 
 b2PolygonShape.prototype.draw = function(transform) {
@@ -164,6 +193,19 @@ b2PolygonShape.prototype.draw = function(transform) {
                       positions[zPosition], positions[zPosition + 1],
                       0, 0, 0);
 };
+
+b2PolygonShape.prototype.draw2 = function(transform, color) {
+  var zPosition = renderer.currentVertex * 3;
+  renderer.transformVerticesAndInsert(this.vertices, transform, color.r, color.g, color.b);
+
+  // create a loop
+  var positions = renderer.positions;
+  var last = (renderer.currentVertex - 1) * 3;
+  renderer.insertLine(positions[last], positions[last + 1],
+                      positions[zPosition], positions[zPosition + 1],
+                      color.r, color.g, color.b);
+};
+
 
 function drawParticleSystem(system) {
   var particles = system.GetPositionBuffer();

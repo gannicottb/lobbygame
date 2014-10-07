@@ -38,9 +38,9 @@ function main(session) {
 
   session.subscribe("com.google.boat.onlogin",
     function(args) {
-      var uid = args[0];
-      console.log(uid);
-      addAnimal();
+      var user = args[0];
+      var uid = user.uid;
+      addAnimal(user.color);
       animals[uid] = nextIdx;
       nextIdx += 1;
     });

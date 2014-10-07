@@ -22,9 +22,9 @@ function TestWaveMachine() {
   b2.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(-4, 0), 0);
   body.CreateFixtureFromShape(b2, 5);
 
-  var b3 = new b2PolygonShape();
-  b3.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, 1), 0);
-  body.CreateFixtureFromShape(b3, 5);
+  // var b3 = new b2PolygonShape();
+  // b3.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, 1), 0);
+  // body.CreateFixtureFromShape(b3, 5);
 
   var b4 = new b2PolygonShape();
   b4.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, -1), 0);
@@ -33,7 +33,7 @@ function TestWaveMachine() {
   this.bd = new b2BodyDef();
   this.bd.type = b2_dynamicBody;
   this.bd.allowSleep = false;
-  this.bd.position.Set(0, 1);
+  this.bd.position.Set(0, 2);
   // boat body
   this.boat_body = world.CreateBody(this.bd);
   var boat = new b2PolygonShape();
@@ -56,36 +56,100 @@ function TestWaveMachine() {
   this.boat_body.CreateFixtureFromDef(fixture);
 
 
-  var jd = new b2RevoluteJointDef();
-  jd.motorSpeed = 0.05 * Math.PI;
-  jd.maxMotorTorque = 1e7;
-  jd.enableMotor = true;
+  // var jd = new b2RevoluteJointDef();
+  // jd.motorSpeed = 0.05 * Math.PI;
+  // jd.maxMotorTorque = 1e7;
+  // jd.enableMotor = true;
   // this.joint = jd.InitializeAndCreate(ground, this.boat_body, new b2Vec2(0, 1));
   this.time = 0;
 
   // setup particles
   var psd = new b2ParticleSystemDef();
   psd.radius = 0.05;
-  psd.dampingStrength = 0.2;
+  psd.dampingStrength = 0.5;
 
   var particleSystem = world.CreateParticleSystem(psd);
   var box = new b2PolygonShape();
 
-  box.SetAsBoxXYCenterAngle(3.9, 0.25, new b2Vec2(0, 0.3), 0);
+  box.SetAsBoxXYCenterAngle(3.9, 0.7, new b2Vec2(0, 0.7), 0);
 
 
   var particleGroupDef = new b2ParticleGroupDef();
+
   particleGroupDef.shape = box;
+  particleGroupDef.flags = b2_waterParticle;
+  particleGroupDef.color = new b2ParticleColor(100, 150, 255, 255);
   var particleGroup = particleSystem.CreateParticleGroup(particleGroupDef);
 
   this.animals = [];
+
+  // world.SetContactListener(this);
 }
+
+TestWaveMachine.prototype.BeginContactBody = function(contact) {
+  var fixtureA = contact.GetFixtureA();
+  var fixtureB = contact.GetFixtureB();
+
+  if (fixtureA === this.sensor) {
+    var userData = fixtureB.body.GetUserData();
+    if (userData) {
+      this.touching[userData] = true;
+    }
+  }
+  if (fixtureB === this.sensor) {
+    var userData = fixtureB.body.GetUserData();
+    if (userData) {
+      this.touching[userData] = true;
+    }
+  }
+};
+
+TestWaveMachine.prototype.EndContactBody = function(contact) {
+  var fixtureA = contact.GetFixtureA();
+  var fixtureB = contact.GetFixtureB();
+
+  if (fixtureA === this.sensor) {
+    var userData = fixtureB.body.GetUserData();
+    if (userData) {
+      this.touching[userData] = false;
+    }
+  }
+  if (fixtureB === this.sensor) {
+    var userData = fixtureB.body.GetUserData();
+    if (userData) {
+      this.touching[userData] = false;
+    }
+  }
+};
+
 
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 60;
   // this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
   camera.position.x = this.boat_body.GetWorldCenter().x;
+
+  for (var i = this.animals.length - 1; i >= 0; i--) {
+    if (this.animals[i] == undefined) continue;
+
+    // console.log(this.animals[i].body.GetWorldCenter().y);
+    if (this.animals[i].body.GetWorldCenter().y < 0.2) {
+      // for (var f = 0, max = this.animals[i].body.fixtures.length; f < max; f++) {
+      //   // This line is JUST for Three.js
+      //   scene.remove(this.animals[i].body.fixtures[f].graphic);
+      // }
+      // for (var f = 0, max = this.animals[i].wheel.fixtures.length; f < max; f++) {
+      //   // This line is JUST for Three.js
+      //   scene.remove(this.animals[i].body.fixtures[f].graphic);
+      // }
+      // world.DestroyBody(this.animals[i].body);
+      // world.DestroyBody(this.animals[i].wheel);
+      // world.DestroyJoint(this.animals[i].spring);
+
+      // this.animals[i] = undefined;
+      this.animals[i].spring.SetMotorSpeed(0);
+    }
+  };
 }
 
 TestWaveMachine.prototype.Draw = function() {
@@ -111,7 +175,7 @@ TestWaveMachine.prototype.Draw = function() {
   }
 }
 
-TestWaveMachine.prototype.AddAnimal = function() {
+TestWaveMachine.prototype.AddAnimal = function(color) {
   var animal = {};
 
   var chassis = new b2PolygonShape;
@@ -125,10 +189,11 @@ TestWaveMachine.prototype.AddAnimal = function() {
 
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
-  bd.position.Set(0.0, 1.0);
+  bd.userData = color;
+  bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
   car = world.CreateBody(bd);
   car.CreateFixtureFromShape(chassis, 10.0);
-
+  console.log("userData: " + car.GetUserData());
   animal.body = car;
 
   fd = new b2FixtureDef;
@@ -136,14 +201,14 @@ TestWaveMachine.prototype.AddAnimal = function() {
   fd.density = 7.0;
   fd.friction = 0.9;
 
-  bd.position.Set(0.0, 0.935);
+  bd.position.Set(this.boat_body.GetWorldCenter().x, 1.935);
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
   animal.wheel = wheel1;
 
   jd = new b2WheelJointDef;
-  var axis = new b2Vec2(0.0, 1.0); // ?? why
+  var axis = new b2Vec2(0, 1.0); // ?? why
 
   jd.motorSpeed = 0.0;
   jd.maxMotorTorque = 20.0;
@@ -156,12 +221,15 @@ TestWaveMachine.prototype.AddAnimal = function() {
   animal.spring = spring1;
 
   this.animals.push(animal);
+  console.log(this.animals);
   console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
   console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
 
 }
 
 TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
+  if (this.animals[animal] == undefined) return;
+
   var spring = this.animals[animal].spring;
   console.log("animal: " + animal + " direction: " + direction == 0 ? "left" : "right");
   // var angle = this.boat_body.GetAngle();

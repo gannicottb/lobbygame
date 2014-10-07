@@ -43,8 +43,9 @@ function main(session) {
     user.loggedin = true;
     
     console.log("User "+user.uname+" is logged in.");
-    
-    session.publish('com.google.boat.onlogin', [user.uid]);
+    user.color = Math.floor(Math.random() * 0xffffff);
+    console.log("color: " + user.color);
+    session.publish('com.google.boat.onlogin', [user]);
     return user;
   }
 

@@ -151,9 +151,9 @@ function Testbed(obj) {
   render();
 }
 
-function addAnimal() {
+function addAnimal(color) {
   console.log("testbed: addAnimal");
-  test.AddAnimal();
+  test.AddAnimal(color);
 }
 
 function moveAnimal(animalId, direction) {
