@@ -42,7 +42,8 @@ function main(session) {
          sessionStorage.setItem("uid", uid);
          // Display the username
          $("#user_name").html(user.uname);
-         console.log("user is logged in with uid " + uid + ", and their score is " + user.score);
+         document.body.style.backgroundColor= "#" + user.color.toString(16);
+         console.log("user is logged in with uid " + uid + ", and their color is " + user.color);
 
       },
       session.log
