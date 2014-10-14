@@ -9,7 +9,7 @@ function TestWaveMachine() {
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
-  //this.bd.type = b2_dynamicBody;
+  this.bd.type = b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
@@ -56,11 +56,11 @@ function TestWaveMachine() {
   this.boat_body.CreateFixtureFromDef(fixture);
 
 
-  // var jd = new b2RevoluteJointDef();
-  // jd.motorSpeed = 0.05 * Math.PI;
-  // jd.maxMotorTorque = 1e7;
-  // jd.enableMotor = true;
-  // this.joint = jd.InitializeAndCreate(ground, this.boat_body, new b2Vec2(0, 1));
+  var jd = new b2RevoluteJointDef();
+  jd.motorSpeed = 0.05 * Math.PI;
+  jd.maxMotorTorque = 1e7;
+  jd.enableMotor = true;
+  this.joint = jd.InitializeAndCreate(ground, body, new b2Vec2(0, 1));
   this.time = 0;
 
   // setup particles
@@ -126,7 +126,11 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 60;
-  // this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
+
+  // Wave machine speed
+  this.joint.SetMotorSpeed(0.01 * Math.cos(this.time) * Math.PI);
+
+  // The camera should follow the boat
   camera.position.x = this.boat_body.GetWorldCenter().x;
 
   for (var i = this.animals.length - 1; i >= 0; i--) {
@@ -150,29 +154,6 @@ TestWaveMachine.prototype.Step = function() {
       this.animals[i].spring.SetMotorSpeed(0);
     }
   };
-}
-
-TestWaveMachine.prototype.Draw = function() {
-  var canvas = document.getElementById('myCanvas');
-  var ctx = canvas.getContext('2d');
-  if (ctx != null) {
-    //render animal images
-    for (i = 0; i < this.animals.length; i++) {
-      var dog_body = this.animals[i];
-      var position = dog_body.GetWorldCenter();
-
-
-      var image = new Image();
-      image.src = "img/dog.png";
-      console.log("position: " + position.x + ", " + position.y);
-      ctx.drawImage(image, position.x, position.y);
-    }
-
-    var boat_image = new Image();
-    boat_image.src = "img/boat.png";
-    var boat_center = this.boat_body.GetWorldCenter();
-    ctx.drawImage(boat_image, 10 * boat_center.x, 10 * boat_center.y, 10, 5);
-  }
 }
 
 TestWaveMachine.prototype.AddAnimal = function(color) {
