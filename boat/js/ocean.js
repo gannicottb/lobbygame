@@ -184,22 +184,26 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   chassis.vertices[2] = new b2Vec2(0.10, 0.0);
   chassis.vertices[3] = new b2Vec2(-0.1, 0.0);
 
-  var circle = new b2CircleShape;
-  circle.radius = 0.04;
-
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
   bd.userData = color;
   bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
+  var carFixture = new b2FixtureDef;
+  carFixture.shape = chassis;
+  carFixture.density = 10.0;
+  carFixture.filter.groupIndex = -1;
   car = world.CreateBody(bd);
-  car.CreateFixtureFromShape(chassis, 10.0);
+  car.CreateFixtureFromDef(carFixture);
   console.log("userData: " + car.GetUserData());
   animal.body = car;
 
+  var circle = new b2CircleShape;
+  circle.radius = 0.04;
   fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 7.0;
   fd.friction = 0.9;
+  fd.filter.groupIndex = -1;
 
   bd.position.Set(this.boat_body.GetWorldCenter().x, 1.935);
   wheel1 = world.CreateBody(bd);
@@ -244,6 +248,12 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   // dog_body.SetTransform(vect, 0);
   // console.log("new dog pos: x = " + dog_body.GetWorldCenter().x + " y = " + dog_body.GetWorldCenter().y);
   spring.SetMotorSpeed(direction == 0 ? this.speed : -this.speed);
+  // var horForce = direction < 2 ? (direction == 0 ? -10 : 10) : 0;
+  // var verForce = direction < 2 ? 0 : (direction == 2 ? 10 : -10);
+
+  // var f = this.animals[animal].body.GetWorldVector(new b2Vec2(horForce, verForce));
+  // var p = this.animals[animal].body.GetWorldCenter();
+  // this.animals[animal].body.ApplyForce(f, p, true);
 };
 
 // Only for testing
@@ -257,6 +267,12 @@ TestWaveMachine.prototype.Keyboard = function(char) {
       break;
     case 'd':
       this.MoveAnimal(0, 1);
+      break;
+    case 'w':
+      this.MoveAnimal(0, 2);
+      break;
+    case 'x':
+      this.MoveAnimal(0, 3);
       break;
   }
 };
