@@ -48,6 +48,25 @@ function main(session) {
       session.log
    );
 
+   function handleEvent(event) {
+      var x = event.beta;
+      var y = event.gamma;
+      window.console && console.info('Raw Position: x, y: ', x, y);
+      $('#ac').html('Raw Position: ' + x + ' ' + y);
+
+      if (y > 15) {
+         session.call("com.google.boat.move", [Number(uid), 1]).then(
+            session.log, session.log
+         );
+      }
+      else if (y < -15) {
+         session.call("com.google.boat.move", [Number(uid), 0]).then(
+            session.log, session.log
+         );
+      }
+   } 
+   window.addEventListener("deviceorientation", handleEvent, true);  
+
    // Wire up the guess button
    var leftButton = $("#move_left");
    //Declare an event handlers
