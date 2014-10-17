@@ -1,6 +1,6 @@
 function TestWaveMachine() {
   camera.position.y = 1;
-  camera.position.z = 2.5;
+  camera.position.z = 5;
 
   this.hz = 4;
   this.zeta = 0.7;
@@ -9,26 +9,35 @@ function TestWaveMachine() {
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
-  this.bd.type = b2_dynamicBody;
+  // this.bd.type = b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
 
   var b1 = new b2PolygonShape();
-  b1.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(4, 0), 0);
+  b1.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(8, 0), 0);
   body.CreateFixtureFromShape(b1, 5);
 
-  var b2 = new b2PolygonShape();
-  b2.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(-4, 0), 0);
-  body.CreateFixtureFromShape(b2, 5);
+  // var b2 = new b2PolygonShape();
+  // b2.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(-8, 0), 0);
+  // body.CreateFixtureFromShape(b2, 5);
 
   // var b3 = new b2PolygonShape();
   // b3.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, 1), 0);
   // body.CreateFixtureFromShape(b3, 5);
 
   var b4 = new b2PolygonShape();
-  b4.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, -1), 0);
+  b4.SetAsBoxXYCenterAngle(8, 0.05, new b2Vec2(0, -1), 0);
   body.CreateFixtureFromShape(b4, 5);
+
+  this.bd = new b2BodyDef();
+  this.bd.type = b2_dynamicBody;
+  this.bd.allowSleep = false;
+  this.bd.position.Set(0, 1);
+  var waveStarterBoardShape = new b2PolygonShape();
+  waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(-7, 0.05), 0);
+  this.waveStarter = world.CreateBody(this.bd);
+  this.waveStarter.CreateFixtureFromShape(waveStarterBoardShape, 100);
 
   this.bd = new b2BodyDef();
   this.bd.type = b2_dynamicBody;
@@ -37,14 +46,14 @@ function TestWaveMachine() {
   // boat body
   this.boat_body = world.CreateBody(this.bd);
   var boat = new b2PolygonShape();
-  boat.vertices.push(new b2Vec2(-1.1, 0.05));
-  boat.vertices.push(new b2Vec2(1.1, 0.05));
+  // boat.vertices.push(new b2Vec2(-1.1, 0.05));
+  // boat.vertices.push(new b2Vec2(1.1, 0.05));
   boat.vertices.push(new b2Vec2(1.0, 0.00));
   // boat.vertices.push(new b2Vec2(0.8, -0.05));
-  boat.vertices.push(new b2Vec2(0.5, -0.1));
-  boat.vertices.push(new b2Vec2(0.3, -0.15));
-  boat.vertices.push(new b2Vec2(-0.3, -0.15));
-  boat.vertices.push(new b2Vec2(-0.5, -0.1));
+  boat.vertices.push(new b2Vec2(1.0, -0.1));
+  // boat.vertices.push(new b2Vec2(0.3, -0.15));
+  // boat.vertices.push(new b2Vec2(-0.3, -0.15));
+  boat.vertices.push(new b2Vec2(-1.0, -0.1));
   // boat.vertices.push(new b2Vec2(-0.8, -0.05));
   boat.vertices.push(new b2Vec2(-1.0, 0.00));
 
@@ -59,7 +68,7 @@ function TestWaveMachine() {
   var jd = new b2RevoluteJointDef();
   jd.motorSpeed = 0.05 * Math.PI;
   jd.maxMotorTorque = 1e7;
-  jd.enableMotor = true;
+  jd.enableMotor = false;
   this.joint = jd.InitializeAndCreate(ground, body, new b2Vec2(0, 1));
   this.time = 0;
 
@@ -84,6 +93,7 @@ function TestWaveMachine() {
   this.animals = [];
 
   // world.SetContactListener(this);
+  this.direction = 1;
 }
 
 TestWaveMachine.prototype.BeginContactBody = function(contact) {
@@ -128,10 +138,19 @@ TestWaveMachine.prototype.Step = function() {
   this.time += 1 / 60;
 
   // Wave machine speed
-  this.joint.SetMotorSpeed(0.01 * Math.cos(this.time) * Math.PI);
+  // this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
+
+  if (this.waveStarter.GetWorldCenter().x <= -7) {
+    this.direction = 1;
+  } else if (this.waveStarter.GetWorldCenter().x >= -4) {
+    this.direction = -0.5;
+  }
+  this.waveStarter.SetLinearVelocity(new b2Vec2(1 * this.direction, 0));
+  
 
   // The camera should follow the boat
   camera.position.x = this.boat_body.GetWorldCenter().x;
+
 
   for (var i = this.animals.length - 1; i >= 0; i--) {
     if (this.animals[i] == undefined) continue;
@@ -173,6 +192,7 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   carFixture.shape = chassis;
   carFixture.density = 10.0;
   carFixture.filter.groupIndex = -1;
+  // carFixture.friction = 10.0;
   car = world.CreateBody(bd);
   car.CreateFixtureFromDef(carFixture);
   console.log("userData: " + car.GetUserData());
@@ -183,7 +203,7 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 7.0;
-  fd.friction = 0.9;
+  fd.friction = 5;
   fd.filter.groupIndex = -1;
 
   bd.position.Set(this.boat_body.GetWorldCenter().x, 1.935);
@@ -228,7 +248,7 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   // var vect = new b2Vec2(dog_body.GetWorldCenter().x + forceX, dog_body.GetWorldCenter().y + forceY);
   // dog_body.SetTransform(vect, 0);
   // console.log("new dog pos: x = " + dog_body.GetWorldCenter().x + " y = " + dog_body.GetWorldCenter().y);
-  spring.SetMotorSpeed(direction == 0 ? this.speed : -this.speed);
+  spring.SetMotorSpeed(direction * this.speed);
   // var horForce = direction < 2 ? (direction == 0 ? -10 : 10) : 0;
   // var verForce = direction < 2 ? 0 : (direction == 2 ? 10 : -10);
 
