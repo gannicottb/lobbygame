@@ -49,17 +49,16 @@ var Mobile = (function() {
       session.log
     );
 
-
     window.addEventListener("deviceorientation", handleEvent, true);
 
-    //Declare an event handlers
+    //Declare move left handler
     $("#move_left").on('click', function(event) {
       session.call("com.google.boat.move", [Number(uid), 0]).then(
         session.log, session.log
       );
     });
 
-    //Declare an event handlers
+    //Declare move right event handler
     $("#move_right").on('click', function(event) {
       session.call("com.google.boat.move", [Number(uid), 1]).then(
         session.log, session.log

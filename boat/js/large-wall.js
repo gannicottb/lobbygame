@@ -2,29 +2,44 @@ var LargeWall = (function(){
 
   //private members
   var session = null;
-  var animals = [];
+  var players = [];
   var nextIdx = 0;
 
   //private functions
   var onmove = function(args, kwargs, details) {
     var uid = args[0];
-    var animalId = animals[uid];
-    moveAnimal(animalId, args[1]);
+    var playerId = players[uid];
+    moveAnimal(playerId, args[1]);
   };
 
-  var main = function(session) {
+  var onRoundStart = function(args, kwargs){
+    for(var p = 0; p < args.length; p++){
+      addPlayer(args[p]);
+    }
+    //TODO: Start Round Timer
+  }
+
+  var addPlayer = function(user){
+    addAnimal(user.color);
+    players[user.uid] = nextIdx++;
+  }
+
+  var main = function(a_session) {
+    session = a_session;
     initTestbed();
 
     console.log("test bed initialized");    
 
-    session.subscribe("com.google.boat.onlogin",
-      function(args) {
-        var user = args[0];
-        var uid = user.uid;
-        addAnimal(user.color);
-        animals[uid] = nextIdx;
-        nextIdx += 1;
-      });
+    // session.subscribe("com.google.boat.onlogin",
+    //   function(args) {
+    //     var user = args[0];
+    //     var uid = user.uid;
+    //     addAnimal(user.color);
+    //     players[uid] = nextIdx;
+    //     nextIdx += 1;
+    // });
+
+    session.subscribe("com.google.boat.roundStart", onRoundStart);
 
     // Large Wall handles user input
     session.register('com.google.boat.move', onmove);

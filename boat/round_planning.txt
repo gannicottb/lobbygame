@@ -1,0 +1,139 @@
+Does this game follow the same basic structure as Guess Who?
+
+Why not just two states? Progress and Wait?
+
+Consider the lifecycle
+
+Backend starts. State = Wait
+The Backend has a defined number of players that it will wait for.
+When enough people have logged in, State = Progress, and the players are dropped into the world.
+
+
+Players who login at any time are added to the queue. The queue is only examined at the end of a round.
+	queue = []
+
+	We can't allow duplicates in the queue
+		enqueued = []
+		enqueued[uid] = true
+
+		so
+
+		uid = id of player that just logged in
+		if(!enqueued[uid]){
+			queue.push(uid);
+			enqueued[uid] = true;
+		}
+
+		and likewise, when we want to pop the user off
+
+		uid = queue.pop();
+		if(uid != undefined){
+			enqueued[uid] = false;
+		}
+
+		O(1) time to avoid duplicates rather than O(N)
+
+When the round starts, we set a timer and broadcast the round end time.
+When the timer is up, the round is over, and we broadcast that event.
+We then want to display the round results for some time before starting the next round
+So we can have a prepare timer, and here's the two-fold approach:
+	onRoundOver, set the prepare timer for PREPARE_DURATION
+	When the prepare is up, check if there are enough players in the queue.
+	If not, then we just wait for a login event to trigger the round start.
+
+Is the queue fair?
+suppose max players = 4
+4 users in, 3 of them die and are added to the queue. round over, the survivor is added to the queue. new players login. when do they join if the first 4 never quit?
+I would prefer that new players get to play as soon as possible. It's like I want to put new players at the beginning of the queue, and players who just played at the end of the queue. I really just want to try to give everyone a fair shake. This is CPU scheduling isn't it oh my.
+
+What if we just shuffle the queue before popping off new players?
+that technically gives everyone an even chance of playing in the next round
+
+
+OK, so login looks like this sort of
+
+var queue = [];
+var enqueued = {}; //uid: bool
+var survivors = [];
+
+var users = [];
+var State = WAIT;
+var prepare_timer = null;
+
+var lookup = function(uid) {
+    return users[Number(uid)];
+};
+
+var register = function() {
+    users[uidCounter] = {
+      uid: uidCounter,
+      uname: "guest" + uidCounter,
+      loggedin: true,
+      score: 0,
+      times: {}
+    }; 
+    return users[uidCounter++];
+};
+
+
+
+login(uid){
+	var user = lookup(uid);
+
+	if(user == null || user == undefined){
+		user = register();
+	} else if(user.logged_in){
+		return user; // they were already logged in, no more processing needed.
+	}
+
+	pushToQueue(user.uid);
+	
+	if(ready) startRound();
+}
+
+onPlayerDie(uid){
+	var user = lookup(uid);
+	user.times[current_round_number] = new Date().getTime() - round_start;
+	survivors.splice(survivors.indexOf(uid),1) // remove that player from survivors
+	pushToQueue(uid);
+}
+
+ready(){
+	// IF we have enough players to start, 
+	// AND we're waiting but not preparing (i.e., at the beginning or if too many people log out after a round)
+	return (queue.length >= PLAYERS_IN_ROUND && State == Wait && prepare_timer == null)
+}
+
+startRound(){
+	State = Progress;
+	//TODO: Round number increment
+	session.publish('com.google.boat.roundStart')
+
+	shuffle(queue);
+
+	for(var p = 0; p < Math.min(queue.length, MAX_PLAYERS); p++){
+		var uid = popFromQueue();
+		survivors.push(uid);
+		addToWorld(uid);
+	}
+
+	setTimeout(endRound, ROUND_DURATION);
+	
+}
+
+endRound(){
+	State = Wait;
+	//TODO: Score info
+	session.publish('com.google.boat.roundEnd')
+
+	for(var i = 0; i < survivors.length; i++){
+		user = lookup(survivors[i]);
+		user.times[current_round_number] = ROUND_DURATION;
+		pushToQueue(survivors[i]);
+	}
+
+	prepare_timer = setTimeout(function(){
+		prepare_timer = null;
+		if(ready) startRound();		
+	}, PREPARE_DURATION);
+}
