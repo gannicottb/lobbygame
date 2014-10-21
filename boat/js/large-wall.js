@@ -14,6 +14,7 @@ var LargeWall = (function(){
 
   var onRoundStart = function(args, kwargs){
     console.log("!!Round Start!!");
+    Timer.set(0, 'prepare');
     Timer.set(kwargs.duration / 1000, 'round');
 
     for(var p = 0; p < args.length; p++){
