@@ -2,64 +2,57 @@ var Backend = (function() {
 
   // Private Variables
   //
-
   var uidCounter = 0;
   var uids = [];
 
   // Private functions
   //
+  var lookup = function(uid) {
+    return users[Number(uid)];
+  };
+
+  // Register new devices
+  //
+  var register = function() {
+    console.log("register user " + uidCounter);
+
+    uids[uidCounter] = {
+      uid: uidCounter,
+      uname: "guest" + uidCounter,
+      loggedin: false,
+      score: 0 
+    };
+    return uidCounter++;
+  };
+
+  // User login
+  //
+  var login = function(args, kwargs, details) {
+    var uid = args[0]; //it's a string
+    console.log("uid " + args[0] + " logging in");
+    // Register if the user passes in a null id
+    if (uid == null || uid == undefined) {
+      uid = register();
+    }
+    // Grab the user from the "database"
+    var user = lookup(uid);
+    // Log them in
+    user.loggedin = true;
+
+    console.log("User " + user.uname + " is logged in.");
+    user.color = Math.floor(Math.random() * 0xffffff);
+    console.log("color: " + user.color);
+    session.publish('com.google.boat.onlogin', [user]);
+
+    return user;
+  };
+
 
   function main(session) {
-    // User login
-    //
-    var login = function(args, kwargs, details) {
-      var uid = args[0]; //it's a string
-      console.log("uid " + args[0] + " logging in");
-      // Register if the user passes in a null id
-      if (uid == null) {
-        uid = register();
-      }
-      // Grab the user from the "database"
-      var user = uids[Number(uid)];
-      // Log them in
-      user.loggedin = true;
-
-      console.log("User " + user.uname + " is logged in.");
-      user.color = Math.floor(Math.random() * 0xffffff);
-      console.log("color: " + user.color);
-      session.publish('com.google.boat.onlogin', [user]);
-      return user;
-    }
-
-    // Register new devices
-    //
-    var register = function() {
-      console.log("register user " + uidCounter);
-      uids[uidCounter] = {
-        uid: uidCounter,
-        uname: "guest" + uidCounter,
-        loggedin: false,
-        score: 0
-      };
-      return uidCounter++;
-    }
-
-    // Handle guess submission
-    //
-    var move = function(args, kwargs, details) {
-      var guess = args[0];
-      var user = uids[args[1]];
-      if (user == undefined || user == null || user.loggedin == false) {
-        //the user isn't registered or logged in
-        //throw an error of some kind
-        return;
-      }
-    }
 
     // REGISTER RPC
     //
     session.register('com.google.boat.login', login);
-    console.log("registered");
   }
 
   return {
