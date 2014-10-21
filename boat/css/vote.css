@@ -45,6 +45,12 @@ header {
    background-color: #1b1b1b;
 }
 
+.center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
 #header_inner
 {
    position: relative;

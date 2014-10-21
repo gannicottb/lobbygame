@@ -101,7 +101,8 @@ var Backend = (function() {
 
     console.log("Players for this round: ", players);
 
-    session.publish('com.google.boat.roundStart', players, {});
+    session.publish('com.google.boat.roundStart', players, {duration: config.ROUND_DURATION});
+
     setTimeout(endRound, config.ROUND_DURATION);
     
   };
@@ -137,7 +138,7 @@ var Backend = (function() {
   function main(a_session) {
     session = a_session;
 
-    // grab URL params from the browser and set config variables
+    // grab URL params from the browser and set config variables  
     location.search.slice(1).split('&').map(function(str) {
       var pair = str.split('=');
       var key = pair[0];
@@ -145,9 +146,12 @@ var Backend = (function() {
       // if the url param matches a config property, then set it to the supplied value
       if (config.hasOwnProperty(key)) {
         // if the value ends in 's', chop the 's' off, convert value from milliseconds to seconds
-        config[key] = value[value.length - 1] == 's' ? Number(value.substr(0, value.length - 1)) * 1000 : Number(value)
+        config[key] = value[value.length - 1] == 's' ? Number(value.substr(0, value.length - 1)) * 1000 : Number(value);       
       }
     });
+
+    //document.getElementById('params_display').innerHTML = new EJS({url:'templates/params.ejs'}).render({params: config});
+
 
     session.register('com.google.boat.login', login);
   }
