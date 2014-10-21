@@ -116,7 +116,7 @@ var Backend = (function() {
       pushToQueue(players[i].uid);
     }
     
-    session.publish('com.google.boat.roundEnd');
+    session.publish('com.google.boat.roundEnd', [], {duration: config.PREPARE_DURATION});
 
     players = [];
 

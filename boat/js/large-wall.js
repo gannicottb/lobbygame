@@ -6,38 +6,6 @@ var LargeWall = (function(){
   var nextIdx = 0;
 
   //private functions
-  var Timer = (function(){    
-    var timer_id, time;
-    
-    var fmtSeconds = function(seconds){
-      var min = Math.floor(seconds/60);
-      var sec = seconds - (min * 60);
-      if(sec < 10){
-        sec = "0"+sec;
-      }
-      return min+":"+sec;
-    };
-
-    var set = function(t){
-      time = t;
-      update();
-    };
-
-    var update = function(){
-      document.getElementById('timer').innerHTML = fmtSeconds(time);   
-      if(time == 0){
-        clearTimeout(timer_id);        
-      } else {
-        timer_id = setTimeout(update, 1000);
-      }
-      time--;
-    };
-    
-    return {
-      set: set,
-    }
-  })();
-
   var onmove = function(args, kwargs, details) {
     var uid = args[0];
     var playerId = players[uid];
@@ -46,7 +14,7 @@ var LargeWall = (function(){
 
   var onRoundStart = function(args, kwargs){
     console.log("!!Round Start!!");
-    Timer.set(kwargs.duration / 1000);
+    Timer.set(kwargs.duration / 1000, 'round');
 
     for(var p = 0; p < args.length; p++){
       addPlayer(args[p]);
@@ -55,7 +23,8 @@ var LargeWall = (function(){
 
   var onRoundEnd = function(args, kwargs){
     console.log("!!Round Over!!");
-    Timer.set(0);
+    Timer.set(0, 'round');
+    Timer.set(kwargs.duration / 1000, 'prepare');
   };
 
   var addPlayer = function(user){
@@ -69,21 +38,15 @@ var LargeWall = (function(){
 
     console.log("test bed initialized");   
 
-    Timer.set(0); 
+    Timer.set(0,'round');
 
     // session.subscribe("com.google.boat.onlogin",
     //   function(args) {
-    //     var user = args[0];
-    //     var uid = user.uid;
-    //     addAnimal(user.color);
-    //     players[uid] = nextIdx;
-    //     nextIdx += 1;
+    //     addPlayer(args[0]);
     // });
 
     session.subscribe("com.google.boat.roundStart", onRoundStart);
     session.subscribe("com.google.boat.roundEnd", onRoundEnd);
-
-    // Large Wall handles user input
     session.register('com.google.boat.move', onmove);
   }
 
