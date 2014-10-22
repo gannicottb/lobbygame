@@ -1,0 +1,35 @@
+body {
+	font-family: 'Roboto', sans-serif;	
+}
+
+.wrap {
+	width: 80vh;
+	height: 80vh;
+	margin: auto;
+}
+
+#name_container{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	box-shadow: 0px 5px 5px;
+}
+
+.center {
+	margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+#queue {
+	min-height: 50px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+hr{
+	width: 90%; 
+	color: gray;
+	background-color: black;
+	height: 3px;
+	border-width:0
+}

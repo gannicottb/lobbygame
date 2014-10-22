@@ -41,99 +41,14 @@ So we can have a prepare timer, and here's the two-fold approach:
 	When the prepare is up, check if there are enough players in the queue.
 	If not, then we just wait for a login event to trigger the round start.
 
-Is the queue fair?
-suppose max players = 4
-4 users in, 3 of them die and are added to the queue. round over, the survivor is added to the queue. new players login. when do they join if the first 4 never quit?
-I would prefer that new players get to play as soon as possible. It's like I want to put new players at the beginning of the queue, and players who just played at the end of the queue. I really just want to try to give everyone a fair shake. This is CPU scheduling isn't it oh my.
+When the user logs in, if they are in the wait queue, they should know that, and how long they have to wait.
 
-What if we just shuffle the queue before popping off new players?
-that technically gives everyone an even chance of playing in the next round
+The return value for login could include that info
+The wait queue could be an event, so that all players are notified when they enter/leave the wait queue (better)
+But isn't that wasteful? Sending a message to every node even when only 4 of them care? No, because it updates their view of the queue
 
+So actually, it's just one event that contains the current queue. com.google.boat.queueUpdate or something
 
-OK, so login looks like this sort of
+mobiles display the queue box if they are in the queue.
+The queue box gets updated on com.google.boat.queueUpdate to reflect changes.
 
-var queue = [];
-var enqueued = {}; //uid: bool
-var survivors = [];
-
-var users = [];
-var State = WAIT;
-var prepare_timer = null;
-
-var lookup = function(uid) {
-    return users[Number(uid)];
-};
-
-var register = function() {
-    users[uidCounter] = {
-      uid: uidCounter,
-      uname: "guest" + uidCounter,
-      loggedin: true,
-      score: 0,
-      times: {}
-    }; 
-    return users[uidCounter++];
-};
-
-
-
-login(uid){
-	var user = lookup(uid);
-
-	if(user == null || user == undefined){
-		user = register();
-	} else if(user.logged_in){
-		return user; // they were already logged in, no more processing needed.
-	}
-
-	pushToQueue(user.uid);
-	
-	if(ready) startRound();
-}
-
-onPlayerDie(uid){
-	var user = lookup(uid);
-	user.times[current_round_number] = new Date().getTime() - round_start;
-	survivors.splice(survivors.indexOf(uid),1) // remove that player from survivors
-	pushToQueue(uid);
-}
-
-ready(){
-	// IF we have enough players to start, 
-	// AND we're waiting but not preparing (i.e., at the beginning or if too many people log out after a round)
-	return (queue.length >= PLAYERS_IN_ROUND && State == Wait && prepare_timer == null)
-}
-
-startRound(){
-	State = Progress;
-	//TODO: Round number increment
-	session.publish('com.google.boat.roundStart')
-
-	shuffle(queue);
-
-	for(var p = 0; p < Math.min(queue.length, MAX_PLAYERS); p++){
-		var uid = popFromQueue();
-		survivors.push(uid);
-		addToWorld(uid);
-	}
-
-	setTimeout(endRound, ROUND_DURATION);
-	
-}
-
-endRound(){
-	State = Wait;
-	//TODO: Score info
-	session.publish('com.google.boat.roundEnd')
-
-	for(var i = 0; i < survivors.length; i++){
-		user = lookup(survivors[i]);
-		user.times[current_round_number] = ROUND_DURATION;
-		pushToQueue(survivors[i]);
-	}
-
-	prepare_timer = setTimeout(function(){
-		prepare_timer = null;
-		if(ready) startRound();		
-	}, PREPARE_DURATION);
-}

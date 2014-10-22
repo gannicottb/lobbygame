@@ -2,7 +2,7 @@ var Mobile = (function() {
 
   // Private variables
   //
-  var session;
+  var session = null;
   var uid = null;
 
   // Private functions
@@ -29,6 +29,13 @@ var Mobile = (function() {
     }
   };
 
+  var onQueueUpdate = function(args, kwargs){
+    new EJS({url:'templates/queue.ejs'}).update('queue', {data: args});
+    var my_pos = args.indexOf(uid) + 1;
+    var num_players_in_next_round = Math.min(kwargs.max_players, queue.length);
+    var rounds_until_I_play = Math.floor(my_pos / num_players_in_next_round);
+  };
+
   var main = function(a_session) {
     session = a_session;
     //Check to see if the device already has a user id
@@ -41,8 +48,8 @@ var Mobile = (function() {
         uid = user.uid;
         sessionStorage.setItem("uid", uid);
         // Display the username
-        $("#user_name").html(user.uname);
-        document.body.style.backgroundColor = "#" + user.color.toString(16);
+        $("#name_container").html(user.uname);
+        $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
         console.log("user is logged in with uid " + uid + ", and their color is " + user.color);
 
       },
@@ -67,11 +74,13 @@ var Mobile = (function() {
 
     // Subscribe to move events?
     // 
-    session.subscribe("com.google.boat.onmove",
-      function(args) {
-        var event = args[0];
-        console.log(event);
-      });
+    // session.subscribe("com.google.boat.onmove",
+    //   function(args) {
+    //     var event = args[0];
+    //     console.log(event);
+    //   });
+
+    session.subscribe("com.google.boat.queueUpdate", onQueueUpdate);
   }
 
   return {

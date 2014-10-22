@@ -42,6 +42,7 @@ var Backend = (function() {
       queue.push(uid);
       enqueued[uid] = true;
       document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+      session.publish("com.google.boat.queueUpdate", queue);
     }
   };
 
@@ -49,6 +50,7 @@ var Backend = (function() {
     var uid = queue.pop();
     enqueued[uid] = false;
     document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+    session.publish("com.google.boat.queueUpdate", queue);
     return uid;
   };
 

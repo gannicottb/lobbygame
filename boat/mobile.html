@@ -3,33 +3,33 @@
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+   <link href='http://fonts.googleapis.com/css?family=Roboto:700,500,400' rel='stylesheet' type='text/css'>
+   <link rel="stylesheet" href="css/mobile.css">
    <link rel="shortcut icon" href="img/favicon.ico">
    <title>Mobile</title>
 </head>
-<body>  
+<body> 
+   <div class="wrap">
+      <div id="name_container" class="center">   
+         Hello, Google Visitor!
+      </div>     
 
+      <div id="queue" class="center"></div>
 
-
-   <H2><center>
-      Hello,
-         <span id="user_name">
-            Google visitor
-         </span>!
-   </center></H2>
-   <center>
-      <button id="move_left" style="height: 100px; width: 100px">
-         < Left
-      </button>
-      <button id="move_right" style="height: 100px; width: 100px">
-         Right >
-      </button>
-      <span id="ac">
-      </span>      
-   </center>
-   </div>         
+      <div class="center">
+         <button id="move_left" style="height: 100px; width: 100px">
+            Left
+         </button>
+         <button id="move_right" style="height: 100px; width: 100px">
+            Right
+         </button>
+         <div id="ac"></div>
+      </div>  
+   </div>       
 
    <script>AUTOBAHN_DEBUG = true;</script>
    <script src="js/autobahn.min.js"></script>
+   <script type="text/javascript" src="js/lib/ejs_production.js"></script>
    <script src="js/mobile.js"></script>
    <script src="js/jquery-1.11.1.js"></script>
 
