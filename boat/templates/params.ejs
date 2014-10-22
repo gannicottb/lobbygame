@@ -1,6 +1,7 @@
-<h1>Configuration Params</h1>
-<% for(var p in config) { %>
-	<% if (config.hasOwnProperty(p)) { %>
-		<strong><%=p.k%>: <%=p.v%></strong>
+<h2>Configuration Params</h2>
+<% for(var p in data) { %>
+	<% if (data.hasOwnProperty(p)) { %>
+		<strong><%= p %>: <%= data[p] %></strong>
+		<br>
 	<% } %>
 <% } %>

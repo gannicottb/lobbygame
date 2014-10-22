@@ -4,8 +4,7 @@ var Backend = (function() {
   //
   var session = null;
 
-  var PROGRESS = 200;
-  var WAIT = 100;
+  var WAIT = 100, PROGRESS = 200;
 
   var config = {
     MIN_PLAYERS: 1,
@@ -14,15 +13,13 @@ var Backend = (function() {
     PREPARE_DURATION: 10e3
   };
 
-  var queue = [];
-  var enqueued = {};
-  var players = [];
+  var queue = [], enqueued = {}, players = [];
 
-  var uidCounter = 0;
-  var users = [];
+  var users = [], uidCounter = 0;
 
   var state = WAIT;
-  var prepare_timer = null;
+
+  var prepare_timer = null, round_timer = null;
 
   // Private Functions
   //
@@ -44,14 +41,14 @@ var Backend = (function() {
     if(!enqueued[uid]){
       queue.push(uid);
       enqueued[uid] = true;
-      console.log("Queue: ", queue);
+      document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
     }
   };
 
   var popFromQueue = function(){
     var uid = queue.pop();
     enqueued[uid] = false;
-    console.log("Queue: ", queue);
+    document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
     return uid;
   };
 
@@ -91,25 +88,32 @@ var Backend = (function() {
 
   var startRound = function(){
     console.log("start Round");
-    state = PROGRESS;
+    state = PROGRESS;    
 
-    shuffle(queue);
-
-    for(var p = 0; p < Math.min(queue.length, config.MAX_PLAYERS); p++){
+    var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
+    for(var p = 0; p < players_for_round ; p++){
       players.push(lookup(popFromQueue()));
     }
 
-    console.log("Players for this round: ", players);
+    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: players});
 
     session.publish('com.google.boat.roundStart', players, {duration: config.ROUND_DURATION});
 
-    setTimeout(endRound, config.ROUND_DURATION);
+    Timer.set(0, 'prepare');
+    Timer.set(config.ROUND_DURATION/1000, 'round');
+
+    round_timer = setTimeout(endRound, config.ROUND_DURATION);
     
   };
 
   var endRound = function(){
     console.log("end Round");
+    clearTimeout(round_timer);
     state = WAIT;
+
+    Timer.set(0, 'round');
+    Timer.set(config.PREPARE_DURATION/1000, 'prepare')
+
     //TODO: Score info
     for(var i = 0; i < players.length; i++){
       players[i].time = config.ROUND_DURATION;
@@ -132,7 +136,7 @@ var Backend = (function() {
     var user = lookup(uid);
     user.time = new Date().getTime() - round_start;
     players.splice(players.indexOf(uid),1); // remove that user from players
-    pushToQueue(uid);
+    //Ask player if they want to play again
   };
 
   function main(a_session) {
@@ -150,8 +154,9 @@ var Backend = (function() {
       }
     });
 
-    //document.getElementById('params_display').innerHTML = new EJS({url:'templates/params.ejs'}).render({params: config});
-
+    document.getElementById('params_display').innerHTML = new EJS({url:'templates/params.ejs'}).render({data: config});
+    document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+    Timer.set(0, 'round');
 
     session.register('com.google.boat.login', login);
   }
