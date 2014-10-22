@@ -124,6 +124,8 @@ var Backend = (function() {
 
     players = [];
 
+    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: players});
+
     prepare_timer = setTimeout(function(){
       prepare_timer = null;
       if(ready()) {
