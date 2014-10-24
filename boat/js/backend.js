@@ -88,6 +88,13 @@ var Backend = (function() {
     return user;
   };
 
+  var joinQueue = function(args){
+    var user = lookup(args[0]);
+    if(user.logged_in){
+      pushToQueue(user.uid);
+    }
+  };
+
   var startRound = function(){
     console.log("start Round");
     state = PROGRESS;    
@@ -119,10 +126,9 @@ var Backend = (function() {
     //TODO: Score info
     for(var i = 0; i < players.length; i++){
       players[i].time = config.ROUND_DURATION;
-      pushToQueue(players[i].uid);
     }
     
-    session.publish('com.google.boat.roundEnd', [], {duration: config.PREPARE_DURATION});
+    session.publish('com.google.boat.roundEnd', players, {duration: config.PREPARE_DURATION});
 
     players = [];
 
@@ -138,8 +144,9 @@ var Backend = (function() {
 
   var onPlayerDeath = function(uid){
     var user = lookup(uid);
+    //TODO: 
     user.time = new Date().getTime() - round_start;
-    players.splice(players.indexOf(uid),1); // remove that user from players
+    //players.splice(players.indexOf(uid),1); // remove that user from players
     //Ask player if they want to play again
   };
 
@@ -163,6 +170,7 @@ var Backend = (function() {
     Timer.set(0, 'round');
 
     session.register('com.google.boat.login', login);
+    session.register('com.google.boat.joinQueue', joinQueue);
   }
 
   return {

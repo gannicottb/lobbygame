@@ -8,6 +8,14 @@ var Mobile = (function() {
   // Private functions
   //
 
+  var joinQueue = function(){    
+    session.call("com.google.boat.joinQueue", [uid]).then(
+      function(success){
+        alertify.success("You joined the queue!");
+      }
+    );
+  }
+
   var handleEvent = function(event) {
     var x = event.beta;
     var y = event.gamma;
@@ -36,6 +44,22 @@ var Mobile = (function() {
     var rounds_until_I_play = Math.floor(my_pos / num_players_in_next_round);
   };
 
+  var onRoundEnd = function(args, kwargs){
+    if (args.some(function(user){return user.uid === uid})){
+      
+      alertify.set({ 
+        labels: {
+          ok     : "Yes!",
+          cancel : "No"
+        } 
+      });
+
+      alertify.confirm("Play again?", function (ok) {
+        if (ok) joinQueue();        
+      });
+    }
+  };
+
   var main = function(a_session) {
     session = a_session;
     //Check to see if the device already has a user id
@@ -58,6 +82,14 @@ var Mobile = (function() {
 
     window.addEventListener("deviceorientation", handleEvent, true);
 
+    //Join Queue button handler
+    $("#join_queue").on('click', function(event){
+      var elem = $(event.target);
+      elem.prop('disabled', true);
+      elem.addClass('disabled');
+      joinQueue()
+    });
+
     //Declare move left handler
     $("#move_left").on('click', function(event) {
       session.call("com.google.boat.move", [Number(uid), 0]).then(
@@ -72,15 +104,8 @@ var Mobile = (function() {
       );
     });
 
-    // Subscribe to move events?
-    // 
-    // session.subscribe("com.google.boat.onmove",
-    //   function(args) {
-    //     var event = args[0];
-    //     console.log(event);
-    //   });
-
     session.subscribe("com.google.boat.queueUpdate", onQueueUpdate);
+    session.subscribe("com.google.boat.roundEnd", onRoundEnd);
   }
 
   return {

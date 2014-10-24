@@ -3,21 +3,23 @@ body {
 }
 
 .wrap {
-	width: 80vh;
+	width: 60vh;
 	height: 80vh;
 	margin: auto;
 }
 
-#name_container{
-	padding-top: 10px;
-	padding-bottom: 10px;
-	box-shadow: 0px 5px 5px;
-}
 
 .center {
 	margin-left: auto;
     margin-right: auto;
     text-align: center;
+}
+
+
+#name_container{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	box-shadow: 0px 5px 5px;
 }
 
 #queue {
@@ -26,10 +28,24 @@ body {
 	padding-bottom: 10px;
 }
 
-hr{
-	width: 90%; 
-	color: gray;
-	background-color: black;
-	height: 3px;
-	border-width:0
+#join_queue {
+	font-family: 'Roboto', sans-serif;
+	font-size: large;
+	color: white;
+	font-weight: bold;
+	
+	border-radius: 25px;
+	height: 50px;
+	width: 150px;
+
+	margin-top: 100px;
+
+}
+
+#join_queue.enabled {
+	background: linear-gradient(to bottom, lightgreen, green);
+}
+
+#join_queue.disabled {
+	background: linear-gradient(to bottom, lightgray, gray);
 }

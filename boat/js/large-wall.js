@@ -41,11 +41,6 @@ var LargeWall = (function(){
 
     Timer.set(0,'round');
 
-    // session.subscribe("com.google.boat.onlogin",
-    //   function(args) {
-    //     addPlayer(args[0]);
-    // });
-
     session.subscribe("com.google.boat.roundStart", onRoundStart);
     session.subscribe("com.google.boat.roundEnd", onRoundEnd);
     session.register('com.google.boat.move', onmove);
