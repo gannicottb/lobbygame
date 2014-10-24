@@ -45,7 +45,7 @@ var Mobile = (function() {
   };
 
   var onRoundEnd = function(args, kwargs){
-    if (args.some(function(user){return user.uid === uid})){
+    if (args.some(function(p_uid){return p_uid === uid})){
       
       alertify.set({ 
         labels: {
@@ -55,7 +55,11 @@ var Mobile = (function() {
       });
 
       alertify.confirm("Play again?", function (ok) {
-        if (ok) joinQueue();        
+        if (ok) {
+          joinQueue();        
+        } else {
+          $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+        }
       });
     }
   };
@@ -67,13 +71,21 @@ var Mobile = (function() {
     uid = sessionStorage.getItem("uid");
     //Log in to the server (and get auto-registered if no uid is present)
     session.call("com.google.boat.login", [uid]).then(
-      function(user) {
-        // Store the uid returned from the server  
+      function(result) {
+        var user = result.user;
+
         uid = user.uid;
-        sessionStorage.setItem("uid", uid);
+        sessionStorage.setItem("uid", uid);       
+        
         // Display the username
         $("#name_container").html(user.uname);
+        //Set background color
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
+        //Disable or enable the join queue button?
+        if(result.can_join){
+          $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+        }
+
         console.log("user is logged in with uid " + uid + ", and their color is " + user.color);
 
       },
@@ -85,9 +97,8 @@ var Mobile = (function() {
     //Join Queue button handler
     $("#join_queue").on('click', function(event){
       var elem = $(event.target);
-      elem.prop('disabled', true);
-      elem.addClass('disabled');
-      joinQueue()
+      elem.prop('disabled', true).removeClass('enabled').addClass('disabled');
+      joinQueue();
     });
 
     //Declare move left handler

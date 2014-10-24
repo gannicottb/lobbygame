@@ -73,7 +73,8 @@ var Backend = (function() {
       user = register();      // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
     } else if(user.logged_in){
-      return user;            // they were already logged in, disregard this event.
+      //return user;            // they were already logged in, disregard this event.
+      return {user: user, can_join: !enqueued[user.uid] && players[user.uid] == undefined}
     } else if(!user.logged_in){
       user.logged_in = true   // they had a valid id. set them as logged in.
     }
@@ -85,7 +86,8 @@ var Backend = (function() {
       startRound();
     }
 
-    return user;
+    //return user;
+    return {user: user, can_join: !enqueued[user.uid] && players[user.uid] == undefined}
   };
 
   var joinQueue = function(args){
@@ -93,6 +95,11 @@ var Backend = (function() {
     if(user.logged_in){
       pushToQueue(user.uid);
     }
+
+    if(ready()) {
+      startRound();
+    }
+
   };
 
   var startRound = function(){
@@ -101,12 +108,18 @@ var Backend = (function() {
 
     var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
     for(var p = 0; p < players_for_round ; p++){
-      players.push(lookup(popFromQueue()));
+      //players.push(lookup(popFromQueue()));
+      players.push(popFromQueue());
     }
 
-    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: players});
+    var player_info = players.map(function(uid){
+      var user = lookup(uid);
+      return {uid: user.uid, color: user.color, uname: user.uname};
+    })
 
-    session.publish('com.google.boat.roundStart', players, {duration: config.ROUND_DURATION});
+    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: player_info});
+
+    session.publish('com.google.boat.roundStart', player_info, {duration: config.ROUND_DURATION});
 
     Timer.set(0, 'prepare');
     Timer.set(config.ROUND_DURATION/1000, 'round');
@@ -125,7 +138,7 @@ var Backend = (function() {
 
     //TODO: Score info
     for(var i = 0; i < players.length; i++){
-      players[i].time = config.ROUND_DURATION;
+      lookup(players[i]).time = config.ROUND_DURATION;
     }
     
     session.publish('com.google.boat.roundEnd', players, {duration: config.PREPARE_DURATION});
