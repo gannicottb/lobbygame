@@ -8,13 +8,38 @@ var Mobile = (function() {
   // Private functions
   //
 
+  var enableQueueButton = function(){
+    $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+  };
+
+  var disableQueueButton = function(){
+    $("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
+  };
+
+  var waitMessage = function(rounds_to_wait){
+    var msg = "";
+    switch(rounds_to_wait){
+      case 0:
+        msg = "You will play in the next round!";
+        break;
+      case 1:
+        msg = "You will play in "+rounds_to_wait+" round!";
+        break;
+      default: 
+        msg = "You will play in "+rounds_to_wait+" rounds!";
+        break;
+    }
+    return msg;
+  }
+
   var joinQueue = function(){    
     session.call("com.google.boat.joinQueue", [uid]).then(
-      function(success){
-        alertify.success("You joined the queue!");
+      function(rounds_to_wait){
+        alertify.success(waitMessage(rounds_to_wait));
+        disableQueueButton();
       }
     );
-  }
+  };
 
   var handleEvent = function(event) {
     var x = event.beta;
@@ -39,9 +64,6 @@ var Mobile = (function() {
 
   var onQueueUpdate = function(args, kwargs){
     new EJS({url:'templates/queue.ejs'}).update('queue', {data: args});
-    var my_pos = args.indexOf(uid) + 1;
-    var num_players_in_next_round = Math.min(kwargs.max_players, queue.length);
-    var rounds_until_I_play = Math.floor(my_pos / num_players_in_next_round);
   };
 
   var onRoundEnd = function(args, kwargs){
@@ -58,7 +80,7 @@ var Mobile = (function() {
         if (ok) {
           joinQueue();        
         } else {
-          $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+          enableQueueButton();
         }
       });
     }
@@ -83,11 +105,12 @@ var Mobile = (function() {
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
         //Disable or enable the join queue button?
         if(result.can_join){
-          $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+          enableQueueButton();
         }
 
         console.log("user is logged in with uid " + uid + ", and their color is " + user.color);
 
+        joinQueue();
       },
       session.log
     );
@@ -95,11 +118,7 @@ var Mobile = (function() {
     window.addEventListener("deviceorientation", handleEvent, true);
 
     //Join Queue button handler
-    $("#join_queue").on('click', function(event){
-      var elem = $(event.target);
-      elem.prop('disabled', true).removeClass('enabled').addClass('disabled');
-      joinQueue();
-    });
+    $("#join_queue").on('click', joinQueue);
 
     //Declare move left handler
     $("#move_left").on('click', function(event) {

@@ -37,19 +37,26 @@ var Backend = (function() {
     return (queue.length >= config.MIN_PLAYERS && state == WAIT && prepare_timer == null)
   };
 
+  var canJoinQueue = function(uid){
+    return !enqueued[uid] && players[uid] == undefined
+  }
+
   var pushToQueue = function(uid){
     if(!enqueued[uid]){
       queue.push(uid);
       enqueued[uid] = true;
       document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
-      session.publish("com.google.boat.queueUpdate", queue);
+      //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
+      session.publish("com.google.boat.queueUpdate", queue);      
     }
+    return queue.length;
   };
 
   var popFromQueue = function(){
     var uid = queue.pop();
     enqueued[uid] = false;
     document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+    //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
     session.publish("com.google.boat.queueUpdate", queue);
     return uid;
   };
@@ -72,34 +79,31 @@ var Backend = (function() {
     if(user == null || user == undefined){
       user = register();      // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
-    } else if(user.logged_in){
-      //return user;            // they were already logged in, disregard this event.
-      return {user: user, can_join: !enqueued[user.uid] && players[user.uid] == undefined}
+    } else if(user.logged_in){ // they were already logged in, disregard this event.
+      return {user: user, can_join: canJoinQueue(user.uid) }
     } else if(!user.logged_in){
       user.logged_in = true   // they had a valid id. set them as logged in.
     }
     console.log("Logged in: ", user.uname, user.color);
 
-    pushToQueue(user.uid);
-    
-    if(ready()) {
-      startRound();
-    }
-
-    //return user;
-    return {user: user, can_join: !enqueued[user.uid] && players[user.uid] == undefined}
+    return {user: user, can_join: canJoinQueue(user.uid)}
   };
 
   var joinQueue = function(args){
     var user = lookup(args[0]);
-    if(user.logged_in){
-      pushToQueue(user.uid);
+    if(!user.logged_in){
+      throw ["user can't join queue if not logged in", "uid:"+args[0]];
     }
 
-    if(ready()) {
-      startRound();
+    var ql = pushToQueue(user.uid);
+    var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
+    
+    if(ready()){
+      startRound();        
     }
 
+    // Return the number of rounds before the user plays
+    return rounds_until_user_plays;
   };
 
   var startRound = function(){
@@ -108,7 +112,6 @@ var Backend = (function() {
 
     var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
     for(var p = 0; p < players_for_round ; p++){
-      //players.push(lookup(popFromQueue()));
       players.push(popFromQueue());
     }
 
@@ -157,10 +160,7 @@ var Backend = (function() {
 
   var onPlayerDeath = function(uid){
     var user = lookup(uid);
-    //TODO: 
     user.time = new Date().getTime() - round_start;
-    //players.splice(players.indexOf(uid),1); // remove that user from players
-    //Ask player if they want to play again
   };
 
   function main(a_session) {
