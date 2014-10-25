@@ -11,7 +11,7 @@ function shuffle(o) { //v1.0
 
 //Simple Timer object suitable for timing up to 59 minutes
 //+ Brandon Gannicott
-var Timer = (function(){    
+var Timer = function(){    
 	var timer_id, time, element_id;
 
 	var fmtSeconds = function(seconds){
@@ -42,4 +42,4 @@ var Timer = (function(){
 	return {
 	  set: set
 	}
-})();
+};

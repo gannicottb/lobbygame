@@ -1,9 +1,12 @@
-var LargeWall = (function(){
+var LargeWall = (function() {
 
   //private members
   var session = null;
   var players = [];
   var nextIdx = 0;
+
+  var roundCountDown = Timer();
+  var prepareCountDown = Timer();
 
   //private functions
   var onmove = function(args, kwargs, details) {
@@ -12,23 +15,26 @@ var LargeWall = (function(){
     moveAnimal(playerId, args[1]);
   };
 
-  var onRoundStart = function(args, kwargs){
+  var onRoundStart = function(args, kwargs) {
     console.log("!!Round Start!!");
-    Timer.set(0, 'prepare');
-    Timer.set(kwargs.duration / 1000, 'round');
 
-    for(var p = 0; p < args.length; p++){
+    prepareCountDown.set(0, 'prepare');
+    roundCountDown.set(kwargs.duration / 1000, 'round');
+    for (var p = 0; p < args.length; p++) {
       addPlayer(args[p]);
     }
   };
 
-  var onRoundEnd = function(args, kwargs){
+  var onRoundEnd = function(args, kwargs) {
     console.log("!!Round Over!!");
-    Timer.set(0, 'round');
-    Timer.set(kwargs.duration / 1000, 'prepare');
+
+    roundCountDown.set(0, 'round');
+    prepareCountDown.set(kwargs.duration / 1000, 'prepare');
+
+    setTimeout(reset, 1000);
   };
 
-  var addPlayer = function(user){
+  var addPlayer = function(user) {
     addAnimal(user.color);
     players[user.uid] = nextIdx++;
   }
@@ -37,9 +43,9 @@ var LargeWall = (function(){
     session = a_session;
     initTestbed();
 
-    console.log("test bed initialized");   
-
-    Timer.set(0,'round');
+    console.log("test bed initialized");
+    
+    roundCountDown.set(0, 'round');
 
     // session.subscribe("com.google.boat.onlogin",
     //   function(args) {
@@ -53,7 +59,7 @@ var LargeWall = (function(){
 
   //public API
   return {
-    connect: function(){
+    connect: function() {
       // the URL of the WAMP Router (Crossbar.io)
       //
       var wsuri;

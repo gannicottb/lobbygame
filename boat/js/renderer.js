@@ -9,9 +9,12 @@ function Renderer() {
   geometry.addAttribute('color', Float32Array, this.maxVertices, 3);
   this.positions = geometry.attributes.position.array;
   this.colors = geometry.attributes.color.array;
+
   this.currentVertex = 0;
   this.buffer = new THREE.Line(geometry,
     new THREE.LineBasicMaterial({ vertexColors: true }), THREE.LinePieces);
+  // this.buffer2 = new THREE.Mesh(geometry,
+  //   new THREE.MeshBasicMaterial( { color: 0xff0000 } ));
 
   this.circleVertices = [];
   this.circleResolution = 5;

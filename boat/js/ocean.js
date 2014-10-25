@@ -132,6 +132,11 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   }
 };
 
+// Register death handler
+TestWaveMachine.prototype.OnDeath = function(callback) {
+  this.deathHandler = callback;
+}
+
 
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
@@ -171,8 +176,22 @@ TestWaveMachine.prototype.Step = function() {
 
       // this.animals[i] = undefined;
       this.animals[i].spring.SetMotorSpeed(0);
+      this.deathHandler(i); //is i the uid?
+
     }
   };
+}
+
+TestWaveMachine.prototype.ResetWorld = function() {
+  for (var i = 0; i < this.animals.length; i++) {
+    this.DestroyAnimal(this.animals[i]);
+  }
+}
+
+TestWaveMachine.prototype.DestroyAnimal = function(animal) {
+  world.DestroyBody(animal.body);
+  world.DestroyBody(animal.wheel);
+  world.DestroyJoint(animal.spring);
 }
 
 TestWaveMachine.prototype.AddAnimal = function(color) {
@@ -261,19 +280,19 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
 TestWaveMachine.prototype.Keyboard = function(char) {
   switch (char) {
     case 'a':
-      this.MoveAnimal(0, 0);
+      this.MoveAnimal(0, 1);
       break;
     case 's':
       this.AddAnimal();
       break;
     case 'd':
-      this.MoveAnimal(0, 1);
+      this.MoveAnimal(0, -1);
       break;
     case 'w':
-      this.MoveAnimal(0, 2);
+      this.MoveAnimal(0, 0);
       break;
     case 'x':
-      this.MoveAnimal(0, 3);
+      this.MoveAnimal(0, 0);
       break;
   }
 };

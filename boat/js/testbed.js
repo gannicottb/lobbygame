@@ -160,6 +160,10 @@ function moveAnimal(animalId, direction) {
   test.MoveAnimal(animalId, direction);
 }
 
+function reset() {
+  testSwitch("TestWaveMachine");
+}
+
 var render = function() {
   // bring objects into world
   renderer.currentVertex = 0;
