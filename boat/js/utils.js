@@ -12,7 +12,7 @@ function shuffle(o) { //v1.0
 //Simple Timer object suitable for timing up to 59 minutes
 //+ Brandon Gannicott
 var Timer = function(){    
-	var timer_id, time, element_id;
+	var timer_id, time, element_id, endCallback;
 
 	var fmtSeconds = function(seconds){
 	  var min = Math.floor(seconds/60);
@@ -23,16 +23,21 @@ var Timer = function(){
 	  return min+":"+sec;
 	};
 
-	var set = function(t, id){
+	var set = function(t, id, callback){
 	  time = t;
 	  element_id = id;
+	  endCallback = callback;
 	  update();
 	};
 
 	var update = function(){
 	  document.getElementById(element_id).innerHTML = fmtSeconds(time);   
 	  if(time == 0){
-	    clearTimeout(timer_id);        
+	    clearTimeout(timer_id);
+	    if (endCallback != null) {
+	    	endCallback();
+	    }  
+	     
 	  } else {
 	    timer_id = setTimeout(update, 1000);
 	  }

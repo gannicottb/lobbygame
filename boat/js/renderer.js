@@ -51,7 +51,6 @@ Renderer.prototype.draw = function() {
         color.r = inv255 * r;
         color.g = inv255 * g;
         color.b = inv255 * b;
-        console.log("dd" + color.b);
         fixture.shape.draw2(transform, color);
       } else {
         fixture.shape.draw(transform);
@@ -165,6 +164,9 @@ b2CircleShape.prototype.draw2 = function(transform, color) {
     center = new b2Vec2(circlePosition.x, circlePosition.y);
  // b2Vec2.Mul(center, transform, center);
   renderer.insertCircleVertices(transform, this.radius, center.x, center.y, color.r, color.g, color.b, 5);
+  renderer.insertCircleVertices(transform, this.radius * 0.75, center.x, center.y, color.r, color.g, color.b, 5);
+  renderer.insertCircleVertices(transform, this.radius * 0.5, center.x, center.y, color.r, color.g, color.b, 5);
+  renderer.insertCircleVertices(transform, this.radius * 0.25, center.x, center.y, color.r, color.g, color.b, 5);
 };
 
 b2ChainShape.prototype.draw = function(transform) {

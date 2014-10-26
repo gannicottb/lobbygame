@@ -1,7 +1,7 @@
-<h2>
+<span>
 	Players: [
-	<% for(var p = 0; p < data.length; p++) { %>
+	<% for(var p in data) { %>
 		<%= data[p].uname %>,
 	<% } %>
 	]
-</h2>
+</span>

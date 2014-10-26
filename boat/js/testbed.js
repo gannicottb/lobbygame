@@ -151,17 +151,22 @@ function Testbed(obj) {
   render();
 }
 
-function addAnimal(color) {
-  console.log("testbed: addAnimal");
-  test.AddAnimal(color);
+function addAnimal(color, uid) {
+  console.log("testbed: addAnimal with color: " + color);
+  test.AddAnimal(color, uid);
 }
 
 function moveAnimal(animalId, direction) {
   test.MoveAnimal(animalId, direction);
 }
 
-function reset() {
+function resetGame() {
   testSwitch("TestWaveMachine");
+  test.ResetWorld();
+}
+
+function onPlayerDeath(callback) {
+  test.OnDeath(callback);
 }
 
 var render = function() {

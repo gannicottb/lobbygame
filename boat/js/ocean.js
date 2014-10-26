@@ -80,7 +80,7 @@ function TestWaveMachine() {
   var particleSystem = world.CreateParticleSystem(psd);
   var box = new b2PolygonShape();
 
-  box.SetAsBoxXYCenterAngle(3.9, 0.7, new b2Vec2(0, 0.7), 0);
+  box.SetAsBoxXYCenterAngle(3.9, 0.8, new b2Vec2(0, 0.9), 0);
 
 
   var particleGroupDef = new b2ParticleGroupDef();
@@ -135,7 +135,7 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
 // Register death handler
 TestWaveMachine.prototype.OnDeath = function(callback) {
   this.deathHandler = callback;
-}
+};
 
 
 TestWaveMachine.prototype.Step = function() {
@@ -174,34 +174,29 @@ TestWaveMachine.prototype.Step = function() {
       // world.DestroyBody(this.animals[i].wheel);
       // world.DestroyJoint(this.animals[i].spring);
 
-      // this.animals[i] = undefined;
+      
       this.animals[i].spring.SetMotorSpeed(0);
-      this.deathHandler(i); //is i the uid?
-
+      
+      if (this.deathHandler != null && this.deathHandler != undefined && this.animals[i].isDead !== true) {
+        this.deathHandler(this.animals[i].userId);
+        this.animals[i].isDead = true;
+      }
     }
   };
-}
+};
 
 TestWaveMachine.prototype.ResetWorld = function() {
-  for (var i = 0; i < this.animals.length; i++) {
-    this.DestroyAnimal(this.animals[i]);
-  }
-}
+  this.animals = [];
+};
 
-TestWaveMachine.prototype.DestroyAnimal = function(animal) {
-  world.DestroyBody(animal.body);
-  world.DestroyBody(animal.wheel);
-  world.DestroyJoint(animal.spring);
-}
-
-TestWaveMachine.prototype.AddAnimal = function(color) {
+TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   var animal = {};
-
+  animal.userId = uid;
   var chassis = new b2PolygonShape;
-  chassis.vertices[0] = new b2Vec2(-0.10, -0.05);
-  chassis.vertices[1] = new b2Vec2(0.10, -0.05);
-  chassis.vertices[2] = new b2Vec2(0.10, 0.0);
-  chassis.vertices[3] = new b2Vec2(-0.1, 0.0);
+  chassis.vertices[0] = new b2Vec2(-0.05, -0.05);
+  chassis.vertices[1] = new b2Vec2(0.05, -0.05);
+  chassis.vertices[2] = new b2Vec2(0.05, 0.05);
+  chassis.vertices[3] = new b2Vec2(-0.05, 0.05);
 
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
@@ -209,7 +204,7 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
   var carFixture = new b2FixtureDef;
   carFixture.shape = chassis;
-  carFixture.density = 10.0;
+  carFixture.density = 5.0;
   carFixture.filter.groupIndex = -1;
   // carFixture.friction = 10.0;
   car = world.CreateBody(bd);
@@ -218,14 +213,14 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   animal.body = car;
 
   var circle = new b2CircleShape;
-  circle.radius = 0.04;
+  circle.radius = 0.1;
   fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 7.0;
   fd.friction = 5;
   fd.filter.groupIndex = -1;
 
-  bd.position.Set(this.boat_body.GetWorldCenter().x, 1.935);
+  bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
@@ -245,7 +240,6 @@ TestWaveMachine.prototype.AddAnimal = function(color) {
   animal.spring = spring1;
 
   this.animals.push(animal);
-  console.log(this.animals);
   console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
   console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
 
@@ -255,7 +249,6 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   if (this.animals[animal] == undefined) return;
 
   var spring = this.animals[animal].spring;
-  console.log("animal: " + animal + " direction: " + direction == 0 ? "left" : "right");
   // var angle = this.boat_body.GetAngle();
   // console.log(angle);
   // var force = direction === 0 ? -0.1 : 0.1;

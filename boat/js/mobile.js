@@ -72,14 +72,6 @@ var Mobile = (function() {
       );
     });
 
-    // Subscribe to move events?
-    // 
-    // session.subscribe("com.google.boat.onmove",
-    //   function(args) {
-    //     var event = args[0];
-    //     console.log(event);
-    //   });
-
     session.subscribe("com.google.boat.queueUpdate", onQueueUpdate);
   }
 
