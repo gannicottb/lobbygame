@@ -1,3 +1,7 @@
-<h2>
-	Wait Queue: head[<%= data.join(" | ") %>]tail
-</h2>
+<span>
+	Wait Queue: head[
+	<% for(var p = 0; p < data.length; p++) { %>
+		<%= data[p].uname %> |
+	<% } %>
+	]tail
+</span>

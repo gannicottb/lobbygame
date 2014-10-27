@@ -1,234 +1,212 @@
-var Backend = (function() {
+// var Backend = (function() {
 
-  // Private Variables
-  //
-  var session = null;
+//   // Private Variables
+//   //
+//   var session = null;
 
-  var WAIT = 100, PROGRESS = 200;
+//   var users = [],
+//     uidCounter = 0;
 
-  var config = {
-    MIN_PLAYERS: 1,
-    MAX_PLAYERS: 6,
-    ROUND_DURATION: 30e3,
-    PREPARE_DURATION: 10e3
-  };
+//   // Private Functions
+//   //
+//   var lookup = function(uid) {
+//     if (uid == null || uid == undefined) {
+//       return uid;
+//        } else {
+//       return users[Number(uid)];
+//     }
+//   };
+// // <<<<<<< HEAD
+// //     }else{
+// //       return users[Number(uid)];      
+// //     }
+// //   };
 
-  var queue = [], enqueued = {}, players = [];
+// //   var ready = function(){
+// //     // IF we have enough players to start, 
+// //     // AND we're waiting but not preparing (i.e., at the beginning or if too many people log out after a round)
+// //     return (queue.length >= config.MIN_PLAYERS && state == WAIT && prepare_timer == null)
+// //   };
 
-  var users = [], uidCounter = 0;
+// //   var canJoinQueue = function(uid){
+// //     return !enqueued[uid] && players[uid] == undefined
+// //   }
 
-  var state = WAIT;
-
-  var prepare_timer = null, round_timer = null;
-
-  // Private Functions
-  //
-  var lookup = function(uid) {
-    if(uid == null || uid == undefined){
-      return uid;
-    }else{
-      return users[Number(uid)];      
-    }
-  };
-
-  var ready = function(){
-    // IF we have enough players to start, 
-    // AND we're waiting but not preparing (i.e., at the beginning or if too many people log out after a round)
-    return (queue.length >= config.MIN_PLAYERS && state == WAIT && prepare_timer == null)
-  };
-
-  var canJoinQueue = function(uid){
-    return !enqueued[uid] && players[uid] == undefined
-  }
-
-  var pushToQueue = function(uid){
-    if(!enqueued[uid]){
-      queue.push(uid);
-      enqueued[uid] = true;
-      document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
-      //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
-      session.publish("com.google.boat.queueUpdate", queue);      
-    }
-    return queue.length;
-  };
-
-  var popFromQueue = function(){
-    var uid = queue.pop();
-    enqueued[uid] = false;
-    document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
-    //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
-    session.publish("com.google.boat.queueUpdate", queue);
-    return uid;
-  };
-
-  var register = function() {
-    users[uidCounter] = {
-      uid: uidCounter,
-      uname: "guest" + uidCounter,
-      logged_in: true,
-      color: Math.floor(Math.random() * 0xffffff),
-      score: 0,
-      time: 0
-    }; 
-    return users[uidCounter++];
-  };
-
-  var login = function(args){
-    var user = lookup(args[0]);
-
-    if(user == null || user == undefined){
-      user = register();      // they don't have an id. give them one.
-      console.log("Registering: ", user.uname);
-    } else if(user.logged_in){ // they were already logged in, disregard this event.
-      return {user: user, can_join: canJoinQueue(user.uid) }
-    } else if(!user.logged_in){
-      user.logged_in = true   // they had a valid id. set them as logged in.
-    }
-    console.log("Logged in: ", user.uname, user.color);
-
-    return {user: user, can_join: canJoinQueue(user.uid)}
-  };
-
-  var joinQueue = function(args){
-    var user = lookup(args[0]);
-    if(!user.logged_in){
-      throw ["user can't join queue if not logged in", "uid:"+args[0]];
-    }
-
-    var ql = pushToQueue(user.uid);
-    var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
+// //   var pushToQueue = function(uid){
+// //     if(!enqueued[uid]){
+// //       queue.push(uid);
+// //       enqueued[uid] = true;
+// //       document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+// //       //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
+// //       session.publish("com.google.boat.queueUpdate", queue);      
+// // =======
+   
+// // >>>>>>> a731c27b5790e4a698f813d8802dd5ee7ba78cdd
     
-    if(ready()){
-      startRound();        
-    }
+//   //   return queue.length;
+//   // };
 
-    // Return the number of rounds before the user plays
-    return rounds_until_user_plays;
-  };
+// // <<<<<<< HEAD
+// //   var popFromQueue = function(){
+// //     var uid = queue.pop();
+// //     enqueued[uid] = false;
+// //     document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
+// //     //session.publish("com.google.boat.queueUpdate", queue, {max_players: config.MAX_PLAYERS});
+// //     session.publish("com.google.boat.queueUpdate", queue);
+// //     return uid;
+// //   };
+// // =======
+// // >>>>>>> a731c27b5790e4a698f813d8802dd5ee7ba78cdd
 
-  var startRound = function(){
-    console.log("start Round");
-    state = PROGRESS;    
+//   var register = function() {
+//     users[uidCounter] = {
+//       uid: uidCounter,
+//       uname: "guest" + uidCounter,
+//       logged_in: true,
+//       color: Math.floor(Math.random() * 0xffffff),
+//       score: 0,
+//       time: 0
+//     };
+//     return users[uidCounter++];
+//   };
 
-    var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
-    for(var p = 0; p < players_for_round ; p++){
-      players.push(popFromQueue());
-    }
+//   var login = function(args) {
+//     var user = lookup(args[0]);
 
-    var player_info = players.map(function(uid){
-      var user = lookup(uid);
-      return {uid: user.uid, color: user.color, uname: user.uname};
-    })
+//     if (user == null || user == undefined) {
+//       user = register(); // they don't have an id. give them one.
+//       console.log("Registering: ", user.uname);
+// // <<<<<<< HEAD
+// //     } else if(user.logged_in){ // they were already logged in, disregard this event.
+// //       return {user: user, can_join: canJoinQueue(user.uid) }
+// //     } else if(!user.logged_in){
+// //       user.logged_in = true   // they had a valid id. set them as logged in.
+// //     }
+// //     console.log("Logged in: ", user.uname, user.color);
 
-    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: player_info});
+// //     return {user: user, can_join: canJoinQueue(user.uid)}
+// //   };
 
-    session.publish('com.google.boat.roundStart', player_info, {duration: config.ROUND_DURATION});
+  
 
-    Timer.set(0, 'prepare');
-    Timer.set(config.ROUND_DURATION/1000, 'round');
+// //   var startRound = function(){
+// //     console.log("start Round");
+// //     state = PROGRESS;    
 
-    round_timer = setTimeout(endRound, config.ROUND_DURATION);
+// //     var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
+// //     for(var p = 0; p < players_for_round ; p++){
+// //       players.push(popFromQueue());
+// //     }
+
+// //     var player_info = players.map(function(uid){
+// //       var user = lookup(uid);
+// //       return {uid: user.uid, color: user.color, uname: user.uname};
+// //     })
+
+// //     document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: player_info});
+
+// //     session.publish('com.google.boat.roundStart', player_info, {duration: config.ROUND_DURATION});
+
+// //     Timer.set(0, 'prepare');
+// //     Timer.set(config.ROUND_DURATION/1000, 'round');
+
+// //     round_timer = setTimeout(endRound, config.ROUND_DURATION);
     
-  };
+// //   };
 
-  var endRound = function(){
-    console.log("end Round");
-    clearTimeout(round_timer);
-    state = WAIT;
+// //   var endRound = function(){
+// //     console.log("end Round");
+// //     clearTimeout(round_timer);
+// //     state = WAIT;
 
-    Timer.set(0, 'round');
-    Timer.set(config.PREPARE_DURATION/1000, 'prepare')
+// //     Timer.set(0, 'round');
+// //     Timer.set(config.PREPARE_DURATION/1000, 'prepare')
 
-    //TODO: Score info
-    for(var i = 0; i < players.length; i++){
-      lookup(players[i]).time = config.ROUND_DURATION;
-    }
+// //     //TODO: Score info
+// //     for(var i = 0; i < players.length; i++){
+// //       lookup(players[i]).time = config.ROUND_DURATION;
+// //     }
     
-    session.publish('com.google.boat.roundEnd', players, {duration: config.PREPARE_DURATION});
+// //     session.publish('com.google.boat.roundEnd', players, {duration: config.PREPARE_DURATION});
 
-    players = [];
+// //     players = [];
 
-    document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: players});
+// //     document.getElementById('players_display').innerHTML = new EJS({url:'templates/players.ejs'}).render({data: players});
 
-    prepare_timer = setTimeout(function(){
-      prepare_timer = null;
-      if(ready()) {
-        startRound();   
-      }
-    }, config.PREPARE_DURATION);
-  };
+// //     prepare_timer = setTimeout(function(){
+// //       prepare_timer = null;
+// //       if(ready()) {
+// //         startRound();   
+// //       }
+// //     }, config.PREPARE_DURATION);
+// //   };
 
-  var onPlayerDeath = function(uid){
-    var user = lookup(uid);
-    user.time = new Date().getTime() - round_start;
-  };
+// //   var onPlayerDeath = function(uid){
+// //     var user = lookup(uid);
+// //     user.time = new Date().getTime() - round_start;
+// //   };
 
-  function main(a_session) {
-    session = a_session;
+// // =======
+//     } else if (user.logged_in) {
+//       return user; // they were already logged in, disregard this event.
+//     } else if (!user.logged_in) {
+//       user.logged_in = true // they had a valid id. set them as logged in.
+//     }
+//     console.log("Logged in: ", user.uname, user.color);
+//     session.publish("com.google.boat.onlogin", [user]);
+//     return user;
+//   };
 
-    // grab URL params from the browser and set config variables  
-    location.search.slice(1).split('&').map(function(str) {
-      var pair = str.split('=');
-      var key = pair[0];
-      var value = pair[1];
-      // if the url param matches a config property, then set it to the supplied value
-      if (config.hasOwnProperty(key)) {
-        // if the value ends in 's', chop the 's' off, convert value from milliseconds to seconds
-        config[key] = value[value.length - 1] == 's' ? Number(value.substr(0, value.length - 1)) * 1000 : Number(value);       
-      }
-    });
+// // >>>>>>> a731c27b5790e4a698f813d8802dd5ee7ba78cdd
+//   function main(a_session) {
+//     session = a_session;
+//     session.register('com.google.boat.login', login);
+//     session.register('com.google.boat.joinQueue', joinQueue);
+//   }
 
-    document.getElementById('params_display').innerHTML = new EJS({url:'templates/params.ejs'}).render({data: config});
-    document.getElementById('queue_display').innerHTML = new EJS({url:'templates/queue.ejs'}).render({data: queue});
-    Timer.set(0, 'round');
+//   return {
+//     connect: function() {
+//       console.log("Connecting Backend...");
+//       var wsuri = null;
 
-    session.register('com.google.boat.login', login);
-    session.register('com.google.boat.joinQueue', joinQueue);
-  }
+//       // include AutobahnJS
+//       try {
+//         autobahn = require('autobahn');
 
-  return {
-    connect: function() {
-      console.log("Connecting Backend...");
-      var wsuri = null;
+//         wsuri = "ws://127.0.0.1:8081/ws"; // assume that this is running locally
+//       } catch (e) {
 
-      // include AutobahnJS
-      try {
-        autobahn = require('autobahn');
+//         // when running in browser, AutobahnJS will
+//         // be included without a module system
 
-        wsuri = "ws://127.0.0.1:8081/ws"; // assume that this is running locally
-      } catch (e) {
- 
-        // when running in browser, AutobahnJS will
-        // be included without a module system
+//         // router url either localhost or assumed to be
+//         // at IP of server of backend HTML
+//         if (document.location.origin == "file://") {
+//           wsuri = "ws://127.0.0.1:8081/ws";
 
-        // router url either localhost or assumed to be
-        // at IP of server of backend HTML
-        if (document.location.origin == "file://") {
-          wsuri = "ws://127.0.0.1:8081/ws";
+//         } else {
+//           wsuri = (document.location.protocol === "http:" ? "ws:" : "wss:") + "//" +
+//             document.location.host + "/ws";
+//         }
+//       }
 
-        } else {
-          wsuri = (document.location.protocol === "http:" ? "ws:" : "wss:") + "//" +
-            document.location.host + "/ws";
-        }
-      }
+//       var connection = new autobahn.Connection({
+//         url: wsuri,
+//         realm: 'realm1'
+//       });
 
-      var connection = new autobahn.Connection({
-        url: wsuri,
-        realm: 'realm1'
-      });
+//       connection.onopen = function(session) {
 
-      connection.onopen = function(session) {
+//         console.log("connected");
 
-        console.log("connected");
+//         main(session);
 
-        main(session);
+//       };
 
-      };
+//       connection.open();
+//       console.log("connection opened");
+//     }
+//   };
 
-      connection.open();
-      console.log("connection opened");
-    }
-  };
-
-})();
-Backend.connect();
+// })();
+// Backend.connect();

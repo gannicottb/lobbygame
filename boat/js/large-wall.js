@@ -1,54 +1,272 @@
-var LargeWall = (function(){
+var LargeWall = (function() {
 
   //private members
   var session = null;
-  var players = [];
+  var players = {}; // uid -> animalId
   var nextIdx = 0;
 
-  //private functions
-  var onmove = function(args, kwargs, details) {
-    var uid = args[0];
-    var playerId = players[uid];
-    moveAnimal(playerId, args[1]);
+  // User management
+  var users = [],
+    uidCounter = 0;
+
+  var roundCountDown = Timer();
+  var prepareCountDown = Timer();
+
+  var round_start = null;
+
+  var WAIT = 100,
+    PROGRESS = 200;
+
+  var config = {
+    MIN_PLAYERS: 1,
+    MAX_PLAYERS: 6,
+    ROUND_DURATION: 30e3,
+    PREPARE_DURATION: 10e3
   };
 
-  var onRoundStart = function(args, kwargs){
-    console.log("!!Round Start!!");
-    Timer.set(0, 'prepare');
-    Timer.set(kwargs.duration / 1000, 'round');
+  var queue = [],
+    enqueued = {};
+  var state = WAIT;
 
-    for(var p = 0; p < args.length; p++){
-      addPlayer(args[p]);
+  //private functions
+
+  /*
+  
+    User Management
+
+  */
+   var lookup = function(uid) {
+    if (uid == null || uid == undefined) {
+      return uid;
+    } else {
+      return users[Number(uid)];
+    }
+  };
+  var register = function() {
+    users[uidCounter] = {
+      uid: uidCounter,
+      uname: "guest" + uidCounter,
+      logged_in: true,
+      color: Math.floor(Math.random() * 0xffffff),
+      score: 0,
+      time: 0
+    };
+    return users[uidCounter++];
+  };
+  var login = function(args) {
+    var user = lookup(args[0]);
+
+    if (user == null || user == undefined) {
+      user = register(); // they don't have an id. give them one.
+      console.log("Registering: ", user.uname);
+      } else if (user.logged_in) {
+      return user; // they were already logged in, disregard this event.
+    } else if (!user.logged_in) {
+      user.logged_in = true // they had a valid id. set them as logged in.
+    }
+    console.log("Logged in: ", user.uname, user.color);
+    //session.publish("com.google.boat.onlogin", [user]);
+    return {user: user, can_join: canJoinQueue(user.uid)}
+  };
+  var canJoinQueue = function(uid){
+    return !enqueued[uid] && players[uid] == undefined
+  }
+  ////////////////////
+
+  var onmove = function(args, kwargs, details) {
+    var uid = args[0];
+    var animalId = players[uid].animalId;
+    moveAnimal(animalId, args[1]);
+  };
+
+  /*
+
+    Round Management
+
+  */
+
+  var tryStartRound = function() {
+    if (ready()) {
+      startRound();
     }
   };
 
-  var onRoundEnd = function(args, kwargs){
-    console.log("!!Round Over!!");
-    Timer.set(0, 'round');
-    Timer.set(kwargs.duration / 1000, 'prepare');
+  var startRound = function() {
+    console.log("start Round");
+    state = PROGRESS;
+    round_start = new Date().getTime();
+    var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
+      // Pop the user from the waiting queue, and add them to the game scene
+    for (var p = 0; p < players_for_round; p++) {
+      var user = popFromQueue();
+      if (user != null && user != undefined) {
+        user.animalId = p;
+        players[user.uid] = user;
+        addAnimal(user.color, user.uid);
+      }
+    }
+
+    document.getElementById('players_display').innerHTML = new EJS({
+      url: 'templates/players.ejs'
+    }).render({
+      data: players
+    });
+    console.log("animals added");
+    prepareCountDown.set(0, 'prepare', null);
+    roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
+
   };
 
-  var addPlayer = function(user){
-    addAnimal(user.color);
-    players[user.uid] = nextIdx++;
-  }
+  var endRound = function() {
+    console.log("end Round");
+    state = WAIT;
+
+    roundCountDown.set(0, 'round', null);
+    prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
+
+    //TODO: Score info
+    for (var uid in players) {
+      players[uid].time = config.ROUND_DURATION;
+      pushToQueue(players[uid]);
+    }
+
+    session.publish('com.google.boat.roundEnd', players, {duration: config.PREPARE_DURATION});
+    // Clear players from current round
+    players = {};
+
+    document.getElementById('players_display').innerHTML = new EJS({
+      url: 'templates/players.ejs'
+    }).render({
+      data: players
+    });
+    round_start = null;
+    setTimeout(restart, 1000);
+  };
+
+  var restart = function() {
+    resetGame();
+    //onPlayerDeath isn't even defined. this call will crash silently. did you even test the code??
+    onPlayerDeath(playerDeathCallback);
+  };
+
+  var ready = function() {
+    // IF we have enough players to start, 
+    // AND we're waiting but not preparing (i.e., at the beginning or if too many people log out after a round)
+    // Why did you remove the prepare timer condition? that was necessary for this call to work
+    return (queue.length >= config.MIN_PLAYERS && state == WAIT)
+  };
+
+  /*
+
+    Queue Management
+
+  */
+
+  var pushToQueue = function(user) {
+    if (!enqueued[user.uid]) {
+      queue.push(user);
+      enqueued[user.uid] = true;
+      document.getElementById('queue_display').innerHTML = new EJS({
+        url: 'templates/queue.ejs'
+      }).render({
+        data: queue
+      });
+    }
+    return queue.length;
+  };
+
+  var popFromQueue = function() {
+    var user = queue.shift(); // needs to be shift() to actually be a queue
+    enqueued[user.uid] = false;
+    document.getElementById('queue_display').innerHTML = new EJS({
+      url: 'templates/queue.ejs'
+    }).render({
+      data: queue
+    });
+    return user;
+  };
+
+  var joinQueue = function(args){
+    var user = lookup(args[0]);
+    if(!user.logged_in){
+      throw ["user can't join queue if not logged in", "uid:"+args[0]];
+    }
+
+    var ql = pushToQueue(user.uid);
+    var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
+    
+    tryStartRound();
+
+    // Return the number of rounds before the user plays
+    return rounds_until_user_plays;
+  };
+
+  var playerDeathCallback = function(uid) {
+    // if (round_start != null) {
+    //   user.time = new Date().getTime() - round_start;
+
+    //   //Ask player if they want to play again
+    // }
+    // players[user.uid] = undefined; // remove that user from players
+    console.log("Player " + uid + " is dead!");
+  };
 
   var main = function(a_session) {
     session = a_session;
     initTestbed();
 
-    console.log("test bed initialized");   
+    console.log("test bed initialized");
 
-    Timer.set(0,'round');
+    roundCountDown.set(0, 'round');
 
-    session.subscribe("com.google.boat.roundStart", onRoundStart);
-    session.subscribe("com.google.boat.roundEnd", onRoundEnd);
+    /*
+      In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
+      and after a round (if the user chooses to play again). We do NOT add them to the queue automatically.
+    */
+
+    // session.subscribe("com.google.boat.onlogin",
+    //   function(args) {
+    //     var user = args[0];
+    //     pushToQueue(user);
+    //     tryStartRound();
+    //   });
+
+    // onPlayerDeath isn't even defined!
+    //onPlayerDeath(playerDeathCallback);
+
+    // grab URL params from the browser and set config variables  
+    location.search.slice(1).split('&').map(function(str) {
+      var pair = str.split('=');
+      var key = pair[0];
+      var value = pair[1];
+      // if the url param matches a config property, then set it to the supplied value
+      if (config.hasOwnProperty(key)) {
+        // if the value ends in 's', chop the 's' off, convert value from milliseconds to seconds
+        config[key] = value[value.length - 1] == 's' ? Number(value.substr(0, value.length - 1)) * 1000 : Number(value);
+      }
+    });
+
+    document.getElementById('params_display').innerHTML = new EJS({
+      url: 'templates/params.ejs'
+    }).render({
+      data: config
+    });
+    document.getElementById('queue_display').innerHTML = new EJS({
+      url: 'templates/queue.ejs'
+    }).render({
+      data: queue
+    });
+
+    roundCountDown.set(0, 'round', null); // why is this here twice???
+
     session.register('com.google.boat.move', onmove);
-  }
+    session.register('com.google.boat.login', login);
+    session.register('com.google.boat.joinQueue', joinQueue);
+  };
 
   //public API
   return {
-    connect: function(){
+    connect: function() {
       // the URL of the WAMP Router (Crossbar.io)
       //
       var wsuri;
