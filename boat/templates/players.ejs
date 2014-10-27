@@ -1,5 +1,5 @@
 <span>
 	Players: [
-		<%= data.map(function(usr){return usr.uname}).join(" | ") %>
+		<%= Object.keys(data).map(function(uid){return data[uid].uname}).join(" | ") %>
 	]
 </span>
