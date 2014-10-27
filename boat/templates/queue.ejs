@@ -1,7 +1,5 @@
 <span>
 	Wait Queue: head[
-	<% for(var p = 0; p < data.length; p++) { %>
-		<%= data[p].uname %> |
-	<% } %>
+		<%= data.map(function(usr){return usr.uname}).join(" | ") %>
 	]tail
 </span>

@@ -1,7 +1,5 @@
 <span>
 	Players: [
-	<% for(var p in data) { %>
-		<%= data[p].uname %>,
-	<% } %>
+		<%= data.map(function(usr){return usr.uname}).join(" | ") %>
 	]
 </span>

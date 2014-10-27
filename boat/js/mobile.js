@@ -67,7 +67,7 @@ var Mobile = (function() {
   };
 
   var onRoundEnd = function(args, kwargs){
-    if (args.some(function(p_uid){return p_uid === uid})){
+    if (args.some(function(p_uid){return p_uid == uid})){
       
       alertify.set({ 
         labels: {
@@ -101,6 +101,7 @@ var Mobile = (function() {
         
         // Display the username
         $("#name_container").html(user.uname);
+        document.title = user.uname + " - Wobble Boat";
         //Set background color
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
         //Disable or enable the join queue button?
