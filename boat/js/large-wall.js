@@ -62,7 +62,7 @@ var LargeWall = (function() {
       user = register(); // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
     } else if (user.logged_in) {
-      return user; // they were already logged in, disregard this event.
+      return {user: user, can_join: canJoinQueue(user.uid)}; // they were already logged in, disregard this event.
     } else if (!user.logged_in) {
       user.logged_in = true // they had a valid id. set them as logged in.
     }
