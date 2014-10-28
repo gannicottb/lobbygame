@@ -165,7 +165,6 @@ var LargeWall = (function() {
 
   var restart = function() {
     resetGame();
-    //onPlayerDeath isn't even defined. this call will crash silently. did you even test the code??
     onPlayerDeath(playerDeathCallback);
   };
 
@@ -215,15 +214,12 @@ var LargeWall = (function() {
 
     console.log("test bed initialized");
 
-    roundCountDown.set(0, 'round');
-
     /*
       In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
       and after a round (if the user chooses to play again). We do NOT add them to the queue automatically.
     */
 
-    // onPlayerDeath isn't even defined!
-    //onPlayerDeath(playerDeathCallback);
+    onPlayerDeath(playerDeathCallback);
 
     // grab URL params from the browser and set config variables  
     location.search.slice(1).split('&').map(function(str) {
@@ -248,7 +244,7 @@ var LargeWall = (function() {
       data: queue
     });
 
-    roundCountDown.set(0, 'round', null); // why is this here twice???
+    roundCountDown.set(0, 'round', null);
 
     session.register('com.google.boat.move', onmove);
     session.register('com.google.boat.login', login);

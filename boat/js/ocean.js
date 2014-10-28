@@ -1,5 +1,5 @@
 function TestWaveMachine() {
-  camera.position.y = 1;
+  camera.position.y = 0;
   camera.position.z = 5;
 
   this.hz = 4;
@@ -191,6 +191,8 @@ TestWaveMachine.prototype.ResetWorld = function() {
 };
 
 TestWaveMachine.prototype.AddAnimal = function(color, uid) {
+
+  var offsetX = this.boat_body.GetWorldCenter().x + RandomFloat(-1, 1);
   var animal = {};
   animal.userId = uid;
   var chassis = new b2PolygonShape;
@@ -202,7 +204,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
   bd.userData = color;
-  bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
+  bd.position.Set(offsetX, 2.0);
   var carFixture = new b2FixtureDef;
   carFixture.shape = chassis;
   carFixture.density = 1.0;
@@ -217,11 +219,11 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   circle.radius = 0.1;
   fd = new b2FixtureDef;
   fd.shape = circle;
-  fd.density = 7.0;
+  fd.density = 2.0;
   fd.friction = 5;
   fd.filter.groupIndex = -1;
 
-  bd.position.Set(this.boat_body.GetWorldCenter().x, 2.0);
+  bd.position.Set(offsetX, 2.0);
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
@@ -241,8 +243,8 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   animal.spring = spring1;
 
   this.animals.push(animal);
-  console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
-  console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
+  // console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
+  // console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
 
 }
 
