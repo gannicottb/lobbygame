@@ -10,7 +10,7 @@ var LargeWall = (function() {
     uidCounter = 0;
 
   var roundCountDown = Timer(); //shouldn't this be new Timer()?
-  var prepareCountDown = Timer();
+  var prepareCountDown = Timer();                                                     
 
   var round_start = null;
 
@@ -123,6 +123,7 @@ var LargeWall = (function() {
       if (user != null && user != undefined) {
         user.animalId = p; // this means lots of players will have duplicate animalIds. Hopefully not a problem?
         players[user.uid] = user; //uid -> user object ? I thought it was just animalIds?
+        players[user.uid].time = 0; 
         addAnimal(user.color, user.uid);
       }
     }
@@ -146,9 +147,26 @@ var LargeWall = (function() {
     prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
 
     //TODO: Score info
+    // for (var uid in players) {
+    //   players[uid].time = config.ROUND_DURATION;
+    // }
+
     for (var uid in players) {
-      players[uid].time = config.ROUND_DURATION;
+      players[uid].score = players[uid].time / 100;
     }
+
+    for(var userID in players)
+    {
+        console.log("Name = "+players[userID].uname);
+        console.log("Score ="+players[userID].score);
+    }
+
+
+    document.getElementById('players_scores').innerHTML = new EJS({
+      url: 'templates/scores.ejs'
+    }).render({
+      players: players
+    });
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION});
     // Clear players from current round
@@ -206,6 +224,7 @@ var LargeWall = (function() {
     //   //Ask player if they want to play again
     // }
     // players[user.uid] = undefined; // remove that user from players
+    players[uid].time = new Date().getTime() - round_start;
     console.log("Player " + uid + " is dead!");
   };
 

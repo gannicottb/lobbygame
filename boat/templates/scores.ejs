@@ -1,0 +1,16 @@
+<span>
+	<table border="1" style="width:20%">
+  	  <tr>
+	    <th>Player</th>
+	  	<% for(var userID in players) {%>
+			<td><%=players[userID].uname%></td>
+	  	<% } %>
+	  </tr>
+	  <tr>
+	  	<th>Score</th>
+	  	<% for(var userID in players) {%>
+			<td><%=players[userID].score%></td>
+	  	<% } %>
+	  </tr>
+	</table>
+</span>
