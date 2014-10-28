@@ -1,5 +1,5 @@
 <span>
 	Players: [
-		<%= Object.keys(data).map(function(uid){return data[uid].uname}).join(" | ") %>
+		<%= Object.keys(data).map(function(uid){return "<span style=\"background-color: #" + data[uid].color.toString(16) + "\">" + data[uid].uname + "</span>"}).join(" | ") %>
 	]
 </span>
