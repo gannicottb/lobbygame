@@ -123,7 +123,7 @@ var LargeWall = (function() {
       if (user != null && user != undefined) {
         user.animalId = p; // this means lots of players will have duplicate animalIds. Hopefully not a problem?
         players[user.uid] = user; //uid -> user object ? I thought it was just animalIds?
-        players[user.uid].time = 0; 
+        //players[user.uid].time = ROUND_DURATION; 
         addAnimal(user.color, user.uid);
       }
     }
@@ -152,7 +152,7 @@ var LargeWall = (function() {
     // }
 
     for (var uid in players) {
-      players[uid].score = players[uid].time / 100;
+      players[uid].score = Math.round(players[uid].time / 100);
     }
 
     for(var userID in players)
