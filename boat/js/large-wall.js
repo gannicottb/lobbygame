@@ -304,7 +304,9 @@ var LargeWall = (function() {
 
 
     //Find local IP and display QR Code  
-    //loadQRCode();
+    if(document.location.host.split(':')[0] == "localhost"){
+      loadQRCode();
+    }
 
     /*
       In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
