@@ -6,6 +6,8 @@ function TestWaveMachine() {
   this.zeta = 0.7;
   this.speed = 5;
 
+  this.wave_starter_velocity = 0;
+
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
@@ -150,7 +152,7 @@ TestWaveMachine.prototype.Step = function() {
   } else if (this.waveStarter.GetWorldCenter().x >= -4) {
     this.direction = -0.5;
   }
-  this.waveStarter.SetLinearVelocity(new b2Vec2(1 * this.direction, 0));
+  this.waveStarter.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.direction, 0));
   
 
   // The camera should follow the boat
@@ -272,6 +274,10 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   // var p = this.animals[animal].body.GetWorldCenter();
   // this.animals[animal].body.ApplyForce(f, p, true);
 };
+
+TestWaveMachine.prototype.setWaveStarterVelocity = function(velocity){
+  this.wave_starter_velocity = velocity;
+}
 
 // Only for testing
 TestWaveMachine.prototype.Keyboard = function(char) {

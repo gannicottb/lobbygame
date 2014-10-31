@@ -165,6 +165,10 @@ function resetGame() {
   test.ResetWorld();
 }
 
+function startWaves(velocity){
+  test.setWaveStarterVelocity(velocity);
+};
+
 function onPlayerDeath(callback) {
   test.OnDeath(callback);
 }
