@@ -30,7 +30,8 @@ var LargeWall = (function() {
     MIN_PLAYERS: 1,
     MAX_PLAYERS: 6,
     ROUND_DURATION: 30e3,
-    PREPARE_DURATION: 10e3
+    PREPARE_DURATION: 10e3,
+    GET_READY_DURATION: 5e3
   };
 
   var queue = [], //user objects
@@ -187,7 +188,14 @@ var LargeWall = (function() {
         addAnimal(user.color, user.uid);
       }
     }
-
+    
+    
+    //wait some time, and then start the wave pusher(s)
+    setTimeout(function(){
+      startWaves(1.5);// sets the velocity of the wave pusher
+    }, config.GET_READY_DURATION);
+    
+    
     document.getElementById('players_display').innerHTML = new EJS({
       url: 'templates/players.ejs'
     }).render({
