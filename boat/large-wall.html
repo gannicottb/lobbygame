@@ -4,27 +4,36 @@
    <meta charset="UTF-8">
    <link rel="shortcut icon" href="img/favicon.ico">
    <title>Main Display (Wall)</title>
-   <script id="loadarea" type="text/javascript"></script>
+   
 
    <link rel="stylesheet" href="css/vote.css">
 </head>
 <body>
 
-   <div>
-      <h1 id="person_name" class="center">Wobble Boat!</h1>
-   </div>  
+   <div class="left">
 
-   <div id="timer_box" class="center">     
-      <h1 id="round"></h1>      
-      <h2 id="prepare"><h2>
+      <div>
+         <h1 id="person_name" class="center">Wobble Boat!</h1>
+      </div>  
+
+      <div id="timer_box" class="center">     
+         <h1 id="round"></h1>      
+         <h2 id="prepare"><h2>
+      </div>
+
+      <div id="params_display"></div>
+      <div id="queue_display"></div>
+      <div id="players_display"></div>
+      <div id="players_scores"></div>
+
+   </div>
+   <div class="right">
+      <div id="qr_code"></div>
+      <h2 id="link_text"></h2>
    </div>
 
-   <div id="params_display"></div>
-   <div id="queue_display"></div>
-   <div id="players_display"></div>
-   <div id="players_scores"></div>
-
    <script type="text/javascript" src="js/lib/ejs_production.js"></script>
+   <script type="text/javascript" src="js/lib/qrcode.min.js"></script>
    <script src="js/liquidfun.js"></script>
    <script src="js/renderer.js"></script>
    <script src="js/three.js"></script>

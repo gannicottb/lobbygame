@@ -275,3 +275,13 @@ button:hover
     height: 350px;
     margin: 10px;
 }
+
+/**/
+.left{
+  float: left;
+  width: 75%;
+}
+.right{
+  float: right;
+  width: 25%;
+}

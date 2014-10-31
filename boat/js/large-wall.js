@@ -5,6 +5,15 @@ var LargeWall = (function() {
   var players = {}; // uid -> animalId
   var nextIdx = 0;
 
+  qrcode = new QRCode($("#qr_code")[0], {
+      text: 'http://127.0.0.1:8081/mobile.html',
+      width: 200,
+      height: 200,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
+
   // User management
   var users = [], //user objects
     uidCounter = 0;
@@ -29,6 +38,57 @@ var LargeWall = (function() {
   var state = WAIT;
 
   //private functions
+
+  var loadQRCode = function(){
+    // Courtesy of http://net.ipcalf.com/
+    // NOTE: window.RTCPeerConnection is "not a constructor" in FF22/23
+    var RTCPeerConnection = /*window.RTCPeerConnection ||*/ window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
+    
+    if (RTCPeerConnection){
+      var rtc = new RTCPeerConnection({iceServers:[]});      
+
+      if (window.mozRTCPeerConnection) {      // FF needs a channel/stream to proceed
+          rtc.createDataChannel('', {reliable:false});
+      };
+      
+      rtc.onicecandidate = function (evt) {
+          if (evt.candidate) grepSDP(evt.candidate.candidate);      
+      };
+
+      rtc.createOffer(function (offerDesc) {
+          grepSDP(offerDesc.sdp);        
+          rtc.setLocalDescription(offerDesc);        
+      }, function (e) { console.warn("offer failed", e); });     
+
+      var addrs = Object.create(null);
+      addrs["0.0.0.0"] = false;
+      function updateDisplay(newAddr) {
+          if (newAddr in addrs) return;
+          else addrs[newAddr] = true;
+          var displayAddrs = Object.keys(addrs).filter(function (k) { return addrs[k]; });
+          var link = "http://"+displayAddrs[0]+":8081/mobile.html"
+          $("#link_text").html(link);
+          qrcode.makeCode(link);
+      }
+
+      function grepSDP(sdp) {       
+        var hosts = [];
+        sdp.split('\r\n').forEach(function (line) { // c.f. http://tools.ietf.org/html/rfc4566#page-39
+            //if (~line.indexOf("a=candidate")) {     // http://tools.ietf.org/html/rfc4566#section-5.13
+            if (line.indexOf("candidate") != -1) {   // the first check doesn't work in Chrome for this page.
+                var parts = line.split(' '),        // http://tools.ietf.org/html/rfc5245#section-15.1
+                    addr = parts[4],
+                    type = parts[7];
+                if (type === 'host') updateDisplay(addr);
+            } else if (~line.indexOf("c=")) {       // http://tools.ietf.org/html/rfc4566#section-5.7
+                var parts = line.split(' '),
+                    addr = parts[2];
+                updateDisplay(addr);
+            }
+        });
+      };       
+    }  
+  };
 
   /*
   
@@ -232,6 +292,11 @@ var LargeWall = (function() {
     initTestbed();
 
     console.log("test bed initialized");
+
+
+
+    //Find local IP and display QR Code  
+    loadQRCode();
 
     /*
       In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
