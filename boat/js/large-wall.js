@@ -6,7 +6,7 @@ var LargeWall = (function() {
   var nextIdx = 0;
 
   qrcode = new QRCode($("#qr_code")[0], {
-      text: 'http://127.0.0.1:8081/mobile.html',
+      text: 'http://'+document.location.host+'/mobile.html',
       width: 200,
       height: 200,
       colorDark : "#000000",
@@ -304,7 +304,7 @@ var LargeWall = (function() {
 
 
     //Find local IP and display QR Code  
-    loadQRCode();
+    //loadQRCode();
 
     /*
       In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
