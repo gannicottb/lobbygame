@@ -195,7 +195,12 @@ var LargeWall = (function() {
       startWaves(1.5);// sets the velocity of the wave pusher
     }, config.GET_READY_DURATION);
     
-    
+    //Hide scores at round start
+    if(document.getElementById('players_scores') !== null)
+    {
+      $('div#players_scores').hide();
+    }
+
     document.getElementById('players_display').innerHTML = new EJS({
       url: 'templates/players.ejs'
     }).render({
@@ -229,12 +234,24 @@ var LargeWall = (function() {
         console.log("Score ="+players[userID].score);
     }
 
-
+    //If 'players_scores' div does not exist, create it and append it to the frame
+    if(document.getElementById('players_scores') === null)
+    {
+      var scores = document.createElement("div");
+      scores.id = "players_scores";
+      var canvasHeight = $('canvas').last().height();
+      var canvasWidth = $('canvas').last().width(); 
+      $(scores).css({width:canvasWidth, height:canvasHeight, position: 'absolute', opacity: 1});     
+      $(scores).appendTo('#frame');
+    }
+    
     document.getElementById('players_scores').innerHTML = new EJS({
-      url: 'templates/scores.ejs'
-    }).render({
-      players: players
-    });
+        url: 'templates/scores.ejs'
+      }).render({
+        players: players
+      });    
+    //Shows the 'players_scores' div if it has been hidden in startRound
+    $('div#players_scores').show();
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION});
     // Clear players from current round
@@ -299,9 +316,8 @@ var LargeWall = (function() {
     session = a_session;
     initTestbed();
 
+
     console.log("test bed initialized");
-
-
 
     //Find local IP and display QR Code  
     if(document.location.host.split(':')[0] == "localhost"){
@@ -343,6 +359,12 @@ var LargeWall = (function() {
     session.register('com.google.boat.move', onmove);
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.joinQueue', joinQueue);
+
+    //Append canvas to the frame (Two canvases get added here)
+    $('canvas').css({position: 'absolute'});
+    $('canvas').appendTo('#frame');
+    console.log("Canvas added to frame");
+
   };
 
   //public API
