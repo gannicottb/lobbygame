@@ -314,8 +314,7 @@ var LargeWall = (function() {
 
   var main = function(a_session) {
     session = a_session;
-    initTestbed();
-
+    initTestbed({canvas: $('#game_canvas')});
 
     console.log("test bed initialized");
 
@@ -360,10 +359,6 @@ var LargeWall = (function() {
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.joinQueue', joinQueue);
 
-    //Append canvas to the frame (Two canvases get added here)
-    $('canvas').css({position: 'absolute'});
-    $('canvas').appendTo('#frame');
-    console.log("Canvas added to frame");
 
   };
 

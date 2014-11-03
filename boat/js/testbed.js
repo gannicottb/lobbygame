@@ -34,13 +34,13 @@ function printErrorMsg(msg) {
   document.body.appendChild(domElement);
 }
 
-function initTestbed() {
+function initTestbed(parameters) {
   camera = new THREE.PerspectiveCamera(70
     , windowWidth / windowHeight
     , 1, 1000);
 
   try {
-    threeRenderer = new THREE.WebGLRenderer();
+    threeRenderer = new THREE.WebGLRenderer(parameters);
   } catch( error ) {
     printErrorMsg('<p>Sorry, your browser does not support WebGL.</p>'
                 + '<p>This testbed application uses WebGL to quickly draw'
