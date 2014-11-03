@@ -60,7 +60,7 @@ function initTestbed(parameters) {
   scene = new THREE.Scene();
   camera.lookAt(scene.position);
 
-  document.body.appendChild( this.threeRenderer.domElement);
+  //document.body.appendChild( this.threeRenderer.domElement);
 
   this.mouseJoint = null;
 

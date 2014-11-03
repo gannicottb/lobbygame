@@ -314,7 +314,10 @@ var LargeWall = (function() {
 
   var main = function(a_session) {
     session = a_session;
-    initTestbed({canvas: $('#game_canvas')});
+    initTestbed({canvas: $('#game_canvas')[0]});
+
+    $('#game_canvas').css({position: 'absolute'});
+    $('#game_canvas').appendTo($('#frame'));
 
     console.log("test bed initialized");
 
