@@ -309,7 +309,8 @@ var LargeWall = (function() {
   var main = function(a_session) {
     session = a_session;
 
-    initTestbed({canvas: $('#game_canvas')[0]});
+    var game_canvas = $('#game_canvas');
+    initTestbed({canvas: game_canvas[0]});
 
     //Set frame dimensions to the dimensions of the canvas width and height
     $('#frame').width(game_canvas.width());
