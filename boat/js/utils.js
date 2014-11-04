@@ -28,7 +28,8 @@ var Timer = function(){
 	  time = t;
 	  element_id = id;
 	  endCallback = callback;
-	  update();
+	  document.getElementById(element_id).innerHTML = fmtSeconds(time);
+	  //update();
 	};
 
 	var update = function(){
@@ -48,6 +49,7 @@ var Timer = function(){
 
 	return {
 	  set: set,
+	  start: update,
 	  counting: function(){return timer_id != null;}
 	}
 };

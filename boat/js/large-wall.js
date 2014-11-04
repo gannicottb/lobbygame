@@ -19,7 +19,8 @@ var LargeWall = (function() {
     uidCounter = 0;
 
   var roundCountDown = Timer(); //shouldn't this be new Timer()?
-  var prepareCountDown = Timer();                                                     
+  var prepareCountDown = Timer();      
+  var getReadyCountDown = Timer();                                               
 
   var round_start = null;
 
@@ -175,6 +176,7 @@ var LargeWall = (function() {
 
   var startRound = function() {
     console.log("start Round");
+
     state = PROGRESS;
     round_start = new Date().getTime();
     var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
@@ -188,12 +190,24 @@ var LargeWall = (function() {
         addAnimal(user.color, user.uid);
       }
     }
-    
-    
-    //wait some time, and then start the wave pusher(s)
-    setTimeout(function(){
-      startWaves(1.5);// sets the velocity of the wave pusher
-    }, config.GET_READY_DURATION);
+
+    //Timing
+    //
+    prepareCountDown.set(0, 'prepare', null);
+
+    roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
+
+    $('#get_ready_timer_box').show();
+    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready_timer_box', function() {
+      $('#get_ready_timer_box').html("GO!");
+      setTimeout(function(){
+        $('#get_ready_timer_box').hide();
+      }, 2000);
+      startWaves(1.3); // sets the velocity of the wave pusher
+      roundCountDown.start();
+    });
+
+    getReadyCountDown.start();
     
     //Hide scores at round start
     if(document.getElementById('players_scores') !== null)
@@ -207,8 +221,6 @@ var LargeWall = (function() {
       data: players
     });
     console.log("animals added");
-    prepareCountDown.set(0, 'prepare', null);
-    roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
   };
 
@@ -218,23 +230,20 @@ var LargeWall = (function() {
 
     roundCountDown.set(0, 'round', null);
     prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
+    prepareCountDown.start();
 
-    //TODO: Score info
-    // for (var uid in players) {
-    //   players[uid].time = config.ROUND_DURATION;
-    // }
+    // Calculate Scores
 
     for (var uid in players) {
       players[uid].score = Math.round(players[uid].time / 100);
-    }
 
-    for(var userID in players)
-    {
-        console.log("Name = "+players[userID].uname);
-        console.log("Score ="+players[userID].score);
+      console.log("Name = "+players[uid].uname);
+      console.log("Score ="+players[uid].score);
     }
 
     //If 'players_scores' div does not exist, create it and append it to the frame
+    //TODO: simplify this by simply adding the score div to the html and accessing it here
+            // That will save all of this code and force you to put the styling into the css where it belongs
     if(document.getElementById('players_scores') === null)
     {
       var scores = document.createElement("div");
@@ -291,7 +300,7 @@ var LargeWall = (function() {
   };
 
   var popFromQueue = function() {
-    var user = queue.shift(); // needs to be shift() to actually be a queue
+    var user = queue.shift();
     enqueued[user.uid] = false;
     document.getElementById('queue_display').innerHTML = new EJS({
       url: 'templates/queue.ejs'
