@@ -183,7 +183,7 @@ var LargeWall = (function() {
       var user = popFromQueue();
       if (user != null && user != undefined) {
         user.animalId = p; // this means lots of players will have duplicate animalIds. Hopefully not a problem?
-        players[user.uid] = user; //uid -> user object ? I thought it was just animalIds?
+        players[user.uid] = user; //player kv pairs are uid -> user object 
         players[user.uid].time = config.ROUND_DURATION; 
         addAnimal(user.color, user.uid);
       }
@@ -302,12 +302,6 @@ var LargeWall = (function() {
   }; 
 
   var playerDeathCallback = function(uid) {
-    // if (round_start != null) {
-    //   user.time = new Date().getTime() - round_start;
-
-    //   //Ask player if they want to play again
-    // }
-    // players[user.uid] = undefined; // remove that user from players
     players[uid].time = new Date().getTime() - round_start;
     console.log("Player " + uid + " is dead!");
   };
@@ -315,12 +309,9 @@ var LargeWall = (function() {
   var main = function(a_session) {
     session = a_session;
 
-    var game_canvas = $('#game_canvas');
+    initTestbed({canvas: $('#game_canvas')[0]});
 
-    initTestbed({canvas: game_canvas[0]});
-
-    game_canvas.css({position: 'absolute'});
-    game_canvas.appendTo($('#frame'));
+    //Set frame dimensions to the dimensions of the canvas width and height
     $('#frame').width(game_canvas.width());
     $('#frame').height(game_canvas.height());
 
@@ -331,11 +322,7 @@ var LargeWall = (function() {
       loadQRCode();
     }
 
-    /*
-      In order to implement a "confirm to play" model, mobile.js sends a request to join the queue after logging in,
-      and after a round (if the user chooses to play again). We do NOT add them to the queue automatically.
-    */
-
+    //Set the onPlayerDeath callback (defined in testbed.js)
     onPlayerDeath(playerDeathCallback);
 
     // grab URL params from the browser and set config variables  
