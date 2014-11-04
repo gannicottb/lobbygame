@@ -285,4 +285,18 @@ button:hover
   float: right;
   width: 25%;
 }
+.qr_wrap{
+  position: absolute;
+  top: 60%;
+  right:0px;
+
+  z-index: 1;
+}
+.qr_wrap #qr_code {
+  float: right;
+}
+#frame{
+  height:100%;
+  position: relative;
+}
 
