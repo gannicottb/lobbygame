@@ -299,6 +299,13 @@ button:hover
   height:100%;
   position: relative;
 }
+
+#frame #get_ready_timer_box
+{
+  position: absolute;
+  top: 0px;
+  left: 50%;
+}
 #game_canvas{
   position: absolute;
 }
