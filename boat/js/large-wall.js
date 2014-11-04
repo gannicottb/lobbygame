@@ -191,8 +191,12 @@ var LargeWall = (function() {
       }
     }
 
+    //Timing
+    //
     prepareCountDown.set(0, 'prepare', null);
+
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
+
     $('#get_ready_timer_box').show();
     getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready_timer_box', function() {
       $('#get_ready_timer_box').html("GO!");
