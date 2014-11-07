@@ -69,13 +69,9 @@ function TestWaveMachine() {
 
   this.boat_body.CreateFixtureFromDef(boat_fixture);
 
-  console.log(this.boat_body);
-
   // Define a new property on boat_body called tag
   this.boat_body.tag = "boat";
-  //
-
-  console.log(this.boat_body);  
+  //  
 
 
   var jd = new b2RevoluteJointDef();

@@ -7,8 +7,8 @@ var LargeWall = (function() {
 
   qrcode = new QRCode($("#qr_code")[0], {
       text: 'http://'+document.location.host+'/mobile.html',
-      width: 200,
-      height: 200,
+      width: $('.wrap').height()/4,
+      height: $('.wrap').height()/4,
       colorDark : "#000000",
       colorLight : "#ffffff",
       correctLevel : QRCode.CorrectLevel.H
@@ -69,7 +69,7 @@ var LargeWall = (function() {
           else addrs[newAddr] = true;
           var displayAddrs = Object.keys(addrs).filter(function (k) { return addrs[k]; });
           var link = "http://"+displayAddrs[0]+":8081/mobile.html"
-          $("#link_text").html(link);
+          //$("#link_text").html(link); //unnecessary
           qrcode.makeCode(link);
       }
 
@@ -340,15 +340,21 @@ var LargeWall = (function() {
     console.log("Player " + uid + " is dead!");
   };
 
+
   var main = function(a_session) {
     session = a_session;
 
     var game_canvas = $('#game_canvas');
+    game_canvas[0].width = $('#frame').width();
+    game_canvas[0].height = $('#frame').height();
+
     initTestbed({canvas: game_canvas[0]});
 
+    //window.addEventListener('resize', resizeCanvas);
+
     //Set frame dimensions to the dimensions of the canvas width and height
-    $('#frame').width(game_canvas.width());
-    $('#frame').height(game_canvas.height());
+    // $('#frame').width(game_canvas.width());
+    // $('#frame').height(game_canvas.height());
 
     console.log("test bed initialized");
 

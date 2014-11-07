@@ -35,7 +35,13 @@ function printErrorMsg(msg) {
 }
 
 function initTestbed(parameters) {
-  camera = new THREE.PerspectiveCamera(70
+
+  windowWidth = parameters.canvas.width;
+  windowHeight = parameters.canvas.height;
+
+  console.log(windowWidth, windowHeight);
+
+  camera = new THREE.PerspectiveCamera(60
     , windowWidth / windowHeight
     , 1, 1000);
 
@@ -230,9 +236,16 @@ QueryCallback.prototype.ReportFixture = function(fixture) {
 };
 
 function onWindowResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  windowWidth = $('#frame').width();
+  windowHeight = $('#frame').height();
+
+  //camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = windowWidth / windowHeight;
+
   camera.updateProjectionMatrix();
-  threeRenderer.setSize( window.innerWidth, window.innerHeight );
+
+  //threeRenderer.setSize( window.innerWidth, window.innerHeight );
+  threeRenderer.setSize(windowWidth, windowHeight);
 }
 
 function getMouseCoords(event) {
