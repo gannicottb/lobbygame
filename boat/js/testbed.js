@@ -57,7 +57,7 @@ function initTestbed(parameters) {
     return;
   }
 
-  threeRenderer.setClearColor(0xEEEEEE);
+  threeRenderer.setClearColor(0x000000);
   threeRenderer.setSize(windowWidth, windowHeight);
 
   camera.position.x = 0;
@@ -65,8 +65,6 @@ function initTestbed(parameters) {
   camera.position.z = 100;
   scene = new THREE.Scene();
   camera.lookAt(scene.position);
-
-  //document.body.appendChild( this.threeRenderer.domElement);
 
   this.mouseJoint = null;
 

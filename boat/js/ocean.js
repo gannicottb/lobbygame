@@ -2,8 +2,8 @@ function TestWaveMachine() {
 
   this.DEATH_THRESHOLD = 60; // 1 second (60 steps per second)
 
-  camera.position.y = 0;
-  camera.position.z = 5;
+  camera.position.y = 0.7;
+  camera.position.z = 3.5;
 
   this.hz = 4;
   this.zeta = 0.7;
@@ -44,12 +44,15 @@ function TestWaveMachine() {
   this.waveStarter = world.CreateBody(this.bd);
   this.waveStarter.CreateFixtureFromShape(waveStarterBoardShape, 100);
 
-  this.bd = new b2BodyDef();
-  this.bd.type = b2_dynamicBody;
-  this.bd.allowSleep = false;
-  this.bd.position.Set(0, 2);
+  var boatBodyRef = new b2BodyDef();
+  boatBodyRef.type = b2_dynamicBody;
+  boatBodyRef.allowSleep = false;
+  boatBodyRef.position.Set(0, 2);
+  boatBodyRef.userData = 0xffffff;
   // boat body
-  this.boat_body = world.CreateBody(this.bd);
+  this.boat_body = world.CreateBody(boatBodyRef);
+  
+
   var boat_shape = new b2PolygonShape();
   // boat_shape.vertices.push(new b2Vec2(-1.1, 0.05));
   // boat_shape.vertices.push(new b2Vec2(1.1, 0.05));
@@ -72,7 +75,7 @@ function TestWaveMachine() {
   // Define a new property on boat_body called tag
   this.boat_body.tag = "boat";
   //  
-
+  console.log("boat userData: " + this.boat_body.GetUserData());
 
   var jd = new b2RevoluteJointDef();
   jd.motorSpeed = 0.05 * Math.PI;
@@ -169,7 +172,7 @@ TestWaveMachine.prototype.Step = function() {
 
   if (this.waveStarter.GetWorldCenter().x <= -7) {
     this.direction = 1;
-  } else if (this.waveStarter.GetWorldCenter().x >= -4) {
+  } else if (this.waveStarter.GetWorldCenter().x >= -5) {
     this.direction = -0.5;
   }
   this.waveStarter.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.direction, 0));

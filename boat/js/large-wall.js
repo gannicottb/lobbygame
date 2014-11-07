@@ -116,11 +116,16 @@ var LargeWall = (function() {
   };
 
   var register = function() {
+    // Make sure the color is bright
+    var genColor = HSVtoRGB(Math.random(), Math.random(), (70.0 + Math.random() * 30.0) / 100.0);
+    console.log("gen color: " + genColor.r + ", " + genColor.g + ", " + genColor.b);
+    var rgb = (genColor.r << 16) + (genColor.g << 8) + genColor.b;
+
     users[uidCounter] = {
       uid: uidCounter,
       uname: "guest" + uidCounter,
       logged_in: true,
-      color: Math.floor(Math.random() * 0xffffff),
+      color: rgb,
       score: 0,
       time: 0,
       dead: false
