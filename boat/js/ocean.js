@@ -1,4 +1,7 @@
 function TestWaveMachine() {
+
+  this.DEATH_THRESHOLD = 60; // 1 second (60 steps per second)
+
   camera.position.y = 0;
   camera.position.z = 5;
 
@@ -47,24 +50,32 @@ function TestWaveMachine() {
   this.bd.position.Set(0, 2);
   // boat body
   this.boat_body = world.CreateBody(this.bd);
-  var boat = new b2PolygonShape();
-  // boat.vertices.push(new b2Vec2(-1.1, 0.05));
-  // boat.vertices.push(new b2Vec2(1.1, 0.05));
-  boat.vertices.push(new b2Vec2(1.5, 0.00));
-  // boat.vertices.push(new b2Vec2(0.8, -0.05));
-  boat.vertices.push(new b2Vec2(1.5, -0.12));
-  // boat.vertices.push(new b2Vec2(0.3, -0.15));
-  // boat.vertices.push(new b2Vec2(-0.3, -0.15));
-  boat.vertices.push(new b2Vec2(-1.5, -0.12));
-  // boat.vertices.push(new b2Vec2(-0.8, -0.05));
-  boat.vertices.push(new b2Vec2(-1.5, 0.00));
+  var boat_shape = new b2PolygonShape();
+  // boat_shape.vertices.push(new b2Vec2(-1.1, 0.05));
+  // boat_shape.vertices.push(new b2Vec2(1.1, 0.05));
+  boat_shape.vertices.push(new b2Vec2(1.5, 0.00));
+  // boat_shape.vertices.push(new b2Vec2(0.8, -0.05));
+  boat_shape.vertices.push(new b2Vec2(1.5, -0.12));
+  // boat_shape.vertices.push(new b2Vec2(0.3, -0.15));
+  // boat_shape.vertices.push(new b2Vec2(-0.3, -0.15));
+  boat_shape.vertices.push(new b2Vec2(-1.5, -0.12));
+  // boat_shape.vertices.push(new b2Vec2(-0.8, -0.05));
+  boat_shape.vertices.push(new b2Vec2(-1.5, 0.00));
 
-  var fixture = new b2FixtureDef();
-  fixture.friction = 0.1;
-  fixture.density = 0.3;
-  fixture.shape = boat;
+  var boat_fixture = new b2FixtureDef();
+  boat_fixture.friction = 0.1;
+  boat_fixture.density = 0.3;
+  boat_fixture.shape = boat_shape;
 
-  this.boat_body.CreateFixtureFromDef(fixture);
+  this.boat_body.CreateFixtureFromDef(boat_fixture);
+
+  console.log(this.boat_body);
+
+  // Define a new property on boat_body called tag
+  this.boat_body.tag = "boat";
+  //
+
+  console.log(this.boat_body);  
 
 
   var jd = new b2RevoluteJointDef();
@@ -94,7 +105,7 @@ function TestWaveMachine() {
 
   this.animals = [];
 
-  // world.SetContactListener(this);
+  world.SetContactListener(this);
   this.direction = 1;
 }
 
@@ -102,6 +113,13 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
   var fixtureA = contact.GetFixtureA();
   var fixtureB = contact.GetFixtureB();
 
+  // If the boat and a player are in contact, then reset the number of steps the player has been not touching
+  if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
+    fixtureB.body.stepsAway = 0;
+    fixtureB.body.touchingBoat = true;
+    // console.log("Begin contact for Fixture B", fixtureB.body.touchingBoat, fixtureB.body.stepsAway);
+  }
+  
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
     if (userData) {
@@ -119,6 +137,12 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
 TestWaveMachine.prototype.EndContactBody = function(contact) {
   var fixtureA = contact.GetFixtureA();
   var fixtureB = contact.GetFixtureB();
+
+  // If the boat and a player stop touching, set the player flag
+  if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
+    fixtureB.body.touchingBoat = false;
+    //console.log("End contact for Fixture A", fixtureB.body.touchingBoat);
+  }
 
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
@@ -160,31 +184,41 @@ TestWaveMachine.prototype.Step = function() {
 
 
   for (var i = this.animals.length - 1; i >= 0; i--) {
-    if (this.animals[i] == undefined) continue;
-    if (this.animals[i].isDead === true) continue;
+    var animal = this.animals[i];
+    if (animal == undefined) continue;
+    if (animal.isDead === true) continue;
 
-    // console.log(this.animals[i].body.GetWorldCenter().y);
-    if (this.animals[i].body.GetWorldCenter().y < 0.2) {
-      // for (var f = 0, max = this.animals[i].body.fixtures.length; f < max; f++) {
-      //   // This line is JUST for Three.js
-      //   scene.remove(this.animals[i].body.fixtures[f].graphic);
-      // }
-      // for (var f = 0, max = this.animals[i].wheel.fixtures.length; f < max; f++) {
-      //   // This line is JUST for Three.js
-      //   scene.remove(this.animals[i].body.fixtures[f].graphic);
-      // }
-      // world.DestroyBody(this.animals[i].body);
-      // world.DestroyBody(this.animals[i].wheel);
-      // world.DestroyJoint(this.animals[i].spring);
+    // Is this animal dead?
+    if(!animal.body.touchingBoat){
 
-      
-      this.animals[i].spring.SetMotorSpeed(0);
-      
-      if (this.deathHandler != null && this.deathHandler != undefined) {
-        this.deathHandler(this.animals[i].userId);
-        this.animals[i].isDead = true;
+      animal.body.stepsAway++;
+
+      if(animal.body.stepsAway >= this.DEATH_THRESHOLD){
+
+        animal.spring.SetMotorSpeed(0);
+
+        //DESTROY PLAYER
+        // Unfortunately, this will crash the game. :(
+
+        // for (var f = 0, max = this.animals[i].body.fixtures.length; f < max; f++) {
+        //   // This line is JUST for Three.js
+        //   scene.remove(this.animals[i].body.fixtures[f].graphic);
+        // }
+        // for (var f = 0, max = this.animals[i].wheel.fixtures.length; f < max; f++) {
+        //   // This line is JUST for Three.js
+        //   scene.remove(this.animals[i].body.fixtures[f].graphic);
+        // }
+        // world.DestroyBody(this.animals[i].body);
+        // world.DestroyBody(this.animals[i].wheel);
+        // world.DestroyJoint(this.animals[i].spring);
+
+        if (this.deathHandler != null && this.deathHandler != undefined) {
+          this.deathHandler(animal.userId);
+          animal.isDead = true;
+        }
       }
     }
+    
   };
 };
 
