@@ -5,7 +5,16 @@ var LargeWall = (function() {
   var players = {}; // uid -> animalId
   var nextIdx = 0;
 
-  qrcode = new QRCode($("#qr_code")[0], {
+  var left_qrcode = new QRCode($(".left_corner.qr_code")[0], {
+      text: 'http://'+document.location.host+'/mobile.html',
+      width: $('.wrap').height()/4,
+      height: $('.wrap').height()/4,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
+
+  var right_qrcode = new QRCode($(".right_corner.qr_code")[0], {
       text: 'http://'+document.location.host+'/mobile.html',
       width: $('.wrap').height()/4,
       height: $('.wrap').height()/4,
@@ -70,7 +79,8 @@ var LargeWall = (function() {
           var displayAddrs = Object.keys(addrs).filter(function (k) { return addrs[k]; });
           var link = "http://"+displayAddrs[0]+":8081/mobile.html"
           //$("#link_text").html(link); //unnecessary
-          qrcode.makeCode(link);
+          left_qrcode.makeCode(link);
+          right_qrcode.makeCode(link);
       }
 
       function grepSDP(sdp) {       
@@ -345,16 +355,11 @@ var LargeWall = (function() {
     session = a_session;
 
     var game_canvas = $('#game_canvas');
+    //Set the canvas dimensions to fill the frame
     game_canvas[0].width = $('#frame').width();
     game_canvas[0].height = $('#frame').height();
 
     initTestbed({canvas: game_canvas[0]});
-
-    //window.addEventListener('resize', resizeCanvas);
-
-    //Set frame dimensions to the dimensions of the canvas width and height
-    // $('#frame').width(game_canvas.width());
-    // $('#frame').height(game_canvas.height());
 
     console.log("test bed initialized");
 
