@@ -112,7 +112,8 @@ var LargeWall = (function() {
       logged_in: true,
       color: Math.floor(Math.random() * 0xffffff),
       score: 0,
-      time: 0
+      time: 0,
+      dead: false
     };
     return users[uidCounter++];
   };
@@ -209,7 +210,7 @@ var LargeWall = (function() {
 
     getReadyCountDown.start();
     
-    //Hide scores at round start
+    //Hide scores at round startdeath
     if(document.getElementById('players_scores') !== null)
     {
       $('div#players_scores').hide();
@@ -232,10 +233,33 @@ var LargeWall = (function() {
     prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
     prepareCountDown.start();
 
-    // Calculate Scores
+    // Calculate Number of players currently on the boat
+    var players_on_boat = 0;
 
     for (var uid in players) {
-      players[uid].score = Math.round(players[uid].time / 100);
+      if(players[uid].dead==false)
+      {
+        players_on_boat++;
+      }
+    }
+    // Calculate Scores
+    for (var uid in players) {
+
+      var score = 0;
+
+      //base score for all players based on how long they lasted in the round
+      score = Math.round(players[uid].time / 100);
+    
+      if(players[uid].dead == false)
+      { //If the player survived the whole round (multiplier based on other survivors)
+        if(players_on_boat>1)
+          score = score * 2 * (players_on_boat-1);
+        else if(players_on_boat==1) 
+          //If the player is the only survivor at round end - bonus points!! -> multiplier based on all the players in the round
+          score = score * 2 * Object.keys(players).length;
+      }
+
+      players[uid].score = score;
 
       console.log("Name = "+players[uid].uname);
       console.log("Score ="+players[uid].score);
@@ -312,6 +336,7 @@ var LargeWall = (function() {
 
   var playerDeathCallback = function(uid) {
     players[uid].time = new Date().getTime() - round_start;
+    players[uid].dead = true;
     console.log("Player " + uid + " is dead!");
   };
 
