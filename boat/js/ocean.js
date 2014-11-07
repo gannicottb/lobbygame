@@ -1,6 +1,6 @@
 function TestWaveMachine() {
 
-  this.DEATH_THRESHOLD = 60; // 1 second (60 steps per second)
+  this.DEATH_THRESHOLD = 120; // 1 second (60 steps per second)
 
   camera.position.y = 0.7;
   camera.position.z = 3.5;
@@ -116,7 +116,7 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
   if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
-    // console.log("Begin contact for Fixture B", fixtureB.body.touchingBoat, fixtureB.body.stepsAway);
+    console.log("Begin contact for Fixture B", fixtureB.body.touchingBoat, fixtureB.body.stepsAway);
   }
   
   if (fixtureA === this.sensor) {
@@ -140,7 +140,7 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   // If the boat and a player stop touching, set the player flag
   if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
     fixtureB.body.touchingBoat = false;
-    //console.log("End contact for Fixture A", fixtureB.body.touchingBoat);
+    console.log("End contact for Fixture A", fixtureB.body.touchingBoat);
   }
 
   if (fixtureA === this.sensor) {

@@ -296,21 +296,16 @@ header {
 .right{
   float: right;
 }
-/*.qr_wrap{
-  position: absolute;
-  top: 74%;
-  right:1%;
-  z-index: 1;
-}*/
-/*.qr_wrap #qr_code {
-  float: right;
-}*/
+#players_scores{
+  color: white;
+}
 
 .left_corner{
   position: absolute;
   top: 74%;
   left: 1%;
   z-index: 1;
+  border: 4px white solid;
 }
 
 .right_corner{
@@ -318,6 +313,7 @@ header {
   top: 74%;
   right: 1%;
   z-index: 1;
+  border: 4px white solid;
 }
 
 .bottom_pane{
@@ -325,6 +321,7 @@ header {
   top: 74%;
   left: 40%;
   z-index: 1;
+  color: white;
 }
 
 #frame #get_ready_timer_box
@@ -335,6 +332,7 @@ header {
   padding: 20px;
   margin: 0px;
   z-index: 1;
+  color: white;
 }
 #game_canvas{
   position: absolute;
