@@ -5,23 +5,17 @@ var LargeWall = (function() {
   var players = {}; // uid -> animalId
   var nextIdx = 0;
 
-  var left_qrcode = new QRCode($(".left_corner.qr_code")[0], {
-      text: 'http://'+document.location.host+'/mobile.html',
-      width: $('.wrap').height()/4,
-      height: $('.wrap').height()/4,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+  var qrcode_opts = {
+    text: 'http://'+document.location.host+'/mobile.html',
+    width: $('.wrap').height()/4,
+    height: $('.wrap').height()/4,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  };
 
-  var right_qrcode = new QRCode($(".right_corner.qr_code")[0], {
-      text: 'http://'+document.location.host+'/mobile.html',
-      width: $('.wrap').height()/4,
-      height: $('.wrap').height()/4,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+  var left_qrcode = new QRCode($(".left_corner.qr_code")[0], qrcode_opts);
+  var right_qrcode = new QRCode($(".right_corner.qr_code")[0], qrcode_opts);
 
   // User management
   var users = [], //user objects
