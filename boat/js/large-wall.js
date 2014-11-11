@@ -207,11 +207,11 @@ var LargeWall = (function() {
 
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
-    $('#get_ready_timer_box').show();
-    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready_timer_box', function() {
-      $('#get_ready_timer_box').html("GO!");
+    $('#get_ready_timer_box').fadeIn();
+    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {
+      $('#get_ready').html("GO!");
       setTimeout(function(){
-        $('#get_ready_timer_box').hide();
+        $('#get_ready_timer_box').fadeOut();
       }, 2000);
       startWaves(); // start the ACTION
       roundCountDown.start();

@@ -329,11 +329,15 @@ header {
   position: absolute;
   top: 0px;
   left: 50%;
+  transform: translateX(-50%);
   padding: 20px;
   margin: 0px;
   z-index: 1;
   color: white;
+  display: none;
 }
+
+
 #game_canvas{
   position: absolute;
 }
