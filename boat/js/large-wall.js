@@ -213,7 +213,7 @@ var LargeWall = (function() {
       setTimeout(function(){
         $('#get_ready_timer_box').hide();
       }, 2000);
-      startWaves(1.3); // sets the velocity of the wave pusher
+      startWaves(); // start the ACTION
       roundCountDown.start();
     });
 
@@ -232,6 +232,33 @@ var LargeWall = (function() {
     });
     console.log("animals added");
 
+  };
+
+  var startWaves = function(){
+    var velocity = 1.3;
+    var index = 0;
+    
+    //Add function calls to this schedule to set the routine for the round
+    var schedule = [
+      leftPush,
+      rightPush,
+      function(vel){
+        bothPush(vel);
+        velocity = 1.5;
+      },
+      leftPush,
+      rightPush
+    ];
+
+    var interval = config.ROUND_DURATION / schedule.length;
+
+    //Run all commands in schedule at specified interval
+    //
+    schedule[index++](velocity); // run the first command
+    var interval_id = setInterval(function(){
+      schedule[index++](velocity); //call next function in schedule 
+      if(index == schedule.length) clearInterval(interval_id); //clear interval when we've called all functions      
+    }, interval);
   };
 
   var endRound = function() {
