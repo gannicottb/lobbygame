@@ -217,13 +217,16 @@ TestWaveMachine.prototype.Step = function() {
           // This line is JUST for Three.js
           scene.remove(animal.body.fixtures[f].graphic);
         }
+        console.log("animal " + i + " will be removed:" + animal);
+        // Need to delete joint first, otherwise it will crash
+        world.DestroyJoint(animal.spring);
         world.DestroyBody(animal.body);
         world.DestroyBody(animal.wheel);
-        world.DestroyJoint(animal.spring);
-
+        
+        animal.isDead = true;
         if (this.deathHandler != null && this.deathHandler != undefined) {
           this.deathHandler(animal.userId);
-          animal.isDead = true;
+          
         }
       }
     }
