@@ -199,17 +199,17 @@ TestWaveMachine.prototype.Step = function() {
         //DESTROY PLAYER
         // Unfortunately, this will crash the game. :(
 
-        // for (var f = 0, max = this.animals[i].body.fixtures.length; f < max; f++) {
-        //   // This line is JUST for Three.js
-        //   scene.remove(this.animals[i].body.fixtures[f].graphic);
-        // }
-        // for (var f = 0, max = this.animals[i].wheel.fixtures.length; f < max; f++) {
-        //   // This line is JUST for Three.js
-        //   scene.remove(this.animals[i].body.fixtures[f].graphic);
-        // }
-        // world.DestroyBody(this.animals[i].body);
-        // world.DestroyBody(this.animals[i].wheel);
-        // world.DestroyJoint(this.animals[i].spring);
+        for (var f = 0, max = animal.body.fixtures.length; f < max; f++) {
+          // This line is JUST for Three.js
+          scene.remove(animal.body.fixtures[f].graphic);
+        }
+        for (var f = 0, max = animal.wheel.fixtures.length; f < max; f++) {
+          // This line is JUST for Three.js
+          scene.remove(animal.body.fixtures[f].graphic);
+        }
+        world.DestroyBody(animal.body);
+        world.DestroyBody(animal.wheel);
+        world.DestroyJoint(animal.spring);
 
         if (this.deathHandler != null && this.deathHandler != undefined) {
           this.deathHandler(animal.userId);
