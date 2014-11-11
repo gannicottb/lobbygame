@@ -170,12 +170,12 @@ function resetGame() {
 }
 
 function leftPush(velocity){
-  test.setWaveStarterVelocity(velocity);
+  test.setWaveStarterLeftVelocity(velocity);
   console.info("push left at", velocity);
 };
 
 function rightPush(velocity){
-  //push right pusher
+  test.setWaveStarterRightVelocity(velocity);
   console.info("push right at", velocity);
 };
 

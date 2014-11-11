@@ -9,7 +9,9 @@ function TestWaveMachine() {
   this.zeta = 0.7;
   this.speed = 5;
 
-  this.wave_starter_velocity = 0;
+  this.wave_starter_l_velocity = 0;
+  this.wave_starter_r_velocity = 0;  
+
 
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
@@ -179,14 +181,14 @@ TestWaveMachine.prototype.Step = function() {
   } else if (this.waveStarterL.GetWorldCenter().x >= -5) {
     this.directionL = -0.5;
   }
-  this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.directionL, 0));
+  this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_l_velocity * this.directionL, 0));
   
   if (this.waveStarterR.GetWorldCenter().x >= 7) {
     this.directionR = -1;
   } else if (this.waveStarterR.GetWorldCenter().x <= 5) {
     this.directionR = 0.5;
   }
-  this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.directionR, 0));
+  this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_r_velocity * this.directionR, 0));
 
   // The camera should follow the boat
   camera.position.x = this.boat_body.GetWorldCenter().x;
@@ -318,8 +320,12 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   // this.animals[animal].body.ApplyForce(f, p, true);
 };
 
-TestWaveMachine.prototype.setWaveStarterVelocity = function(velocity){
-  this.wave_starter_velocity = velocity;
+TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity){
+  this.wave_starter_l_velocity = velocity;
+}
+
+TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity){
+  this.wave_starter_r_velocity = velocity;
 }
 
 // Only for testing
