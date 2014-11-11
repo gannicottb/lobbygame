@@ -169,8 +169,19 @@ function resetGame() {
   test.ResetWorld();
 }
 
-function startWaves(velocity){
+function leftPush(velocity){
   test.setWaveStarterVelocity(velocity);
+  console.info("push left at", velocity);
+};
+
+function rightPush(velocity){
+  //push right pusher
+  console.info("push right at", velocity);
+};
+
+function bothPush(velocity){
+  //push both pushers
+  console.info("push both at", velocity);
 };
 
 function onPlayerDeath(callback) {
