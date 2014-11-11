@@ -19,9 +19,9 @@ function TestWaveMachine() {
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
 
-  var b1 = new b2PolygonShape();
-  b1.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(8, 0), 0);
-  body.CreateFixtureFromShape(b1, 5);
+  // var b1 = new b2PolygonShape();
+  // b1.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(8, 0), 0);
+  // body.CreateFixtureFromShape(b1, 5);
 
   // var b2 = new b2PolygonShape();
   // b2.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(-8, 0), 0);
@@ -41,8 +41,12 @@ function TestWaveMachine() {
   this.bd.position.Set(0, 1);
   var waveStarterBoardShape = new b2PolygonShape();
   waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(-7, 0.05), 0);
-  this.waveStarter = world.CreateBody(this.bd);
-  this.waveStarter.CreateFixtureFromShape(waveStarterBoardShape, 100);
+  this.waveStarterL = world.CreateBody(this.bd);
+  this.waveStarterL.CreateFixtureFromShape(waveStarterBoardShape, 100);
+
+  waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(7, 0.05), 0);
+  this.waveStarterR = world.CreateBody(this.bd);
+  this.waveStarterR.CreateFixtureFromShape(waveStarterBoardShape, 100);
 
   var boatBodyRef = new b2BodyDef();
   boatBodyRef.type = b2_dynamicBody;
@@ -170,13 +174,19 @@ TestWaveMachine.prototype.Step = function() {
   // Wave machine speed
   this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
 
-  if (this.waveStarter.GetWorldCenter().x <= -7) {
-    this.direction = 1;
-  } else if (this.waveStarter.GetWorldCenter().x >= -5) {
-    this.direction = -0.5;
+  if (this.waveStarterL.GetWorldCenter().x <= -7) {
+    this.directionL = 1;
+  } else if (this.waveStarterL.GetWorldCenter().x >= -5) {
+    this.directionL = -0.5;
   }
-  this.waveStarter.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.direction, 0));
+  this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.directionL, 0));
   
+  if (this.waveStarterR.GetWorldCenter().x >= 7) {
+    this.directionR = -1;
+  } else if (this.waveStarterR.GetWorldCenter().x <= 5) {
+    this.directionR = 0.5;
+  }
+  this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_velocity * this.directionR, 0));
 
   // The camera should follow the boat
   camera.position.x = this.boat_body.GetWorldCenter().x;
