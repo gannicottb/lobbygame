@@ -4,8 +4,6 @@
    <meta charset="UTF-8">
    <link rel="shortcut icon" href="img/favicon.ico">
    <title>Main Display (Wall)</title>
-   
-
    <link rel="stylesheet" href="css/vote.css">
 </head>
 <body>
@@ -26,11 +24,6 @@
          <div id="queue_display"></div>
          <div id="players_display"></div>
       </header>
-      
-      <!-- <div class="qr_wrap">
-         <div class="qr_code"></div>
-         <h2 id="link_text"></h2>
-      </div> -->
 
       <div class="left_corner qr_code"></div>
       <div class="right_corner qr_code"></div>
@@ -39,7 +32,10 @@
       </div>
 
       <div id="frame">
-         <h2 id="get_ready_timer_box"></h2>
+         <div id="get_ready_timer_box" >
+            <h2 class="center">Get Ready...</h2>
+            <h2 id="get_ready" class="center"></h2>
+         </div>
          <canvas id="game_canvas"></canvas>
          <div id="players_scores"></div>
       </div>

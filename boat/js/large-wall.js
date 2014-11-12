@@ -5,23 +5,17 @@ var LargeWall = (function() {
   var players = {}; // uid -> animalId
   var nextIdx = 0;
 
-  var left_qrcode = new QRCode($(".left_corner.qr_code")[0], {
-      text: 'http://'+document.location.host+'/mobile.html',
-      width: $('.wrap').height()/4,
-      height: $('.wrap').height()/4,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+  var qrcode_opts = {
+    text: 'http://'+document.location.host+'/mobile.html',
+    width: $('.wrap').height()/4,
+    height: $('.wrap').height()/4,
+    colorDark : "#000000",
+    colorLight : "#ffffff",
+    correctLevel : QRCode.CorrectLevel.H
+  };
 
-  var right_qrcode = new QRCode($(".right_corner.qr_code")[0], {
-      text: 'http://'+document.location.host+'/mobile.html',
-      width: $('.wrap').height()/4,
-      height: $('.wrap').height()/4,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+  var left_qrcode = new QRCode($(".left_corner.qr_code")[0], qrcode_opts);
+  var right_qrcode = new QRCode($(".right_corner.qr_code")[0], qrcode_opts);
 
   // User management
   var users = [], //user objects
@@ -213,13 +207,13 @@ var LargeWall = (function() {
 
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
-    $('#get_ready_timer_box').show();
-    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready_timer_box', function() {
-      $('#get_ready_timer_box').html("GO!");
+    $('#get_ready_timer_box').fadeIn();
+    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {
+      $('#get_ready').html("GO!");
       setTimeout(function(){
-        $('#get_ready_timer_box').hide();
+        $('#get_ready_timer_box').fadeOut();
       }, 2000);
-      startWaves(1.3); // sets the velocity of the wave pusher
+      startWaves(); // start the ACTION
       roundCountDown.start();
     });
 
@@ -238,6 +232,30 @@ var LargeWall = (function() {
     });
     console.log("animals added");
 
+  };
+
+  var startWaves = function(){
+    var velocity = 1.3;
+    var index = 0;
+    
+    //Add function calls to this schedule to set the routine for the round
+    var schedule = [
+      function(vel){
+        leftPush(vel);
+        velocity = 1.5;
+      },
+      rightPush
+    ];
+
+    var interval = config.ROUND_DURATION / schedule.length;
+
+    //Run all commands in schedule at specified interval
+    //
+    schedule[index++](velocity); // run the first command
+    var interval_id = setInterval(function(){
+      schedule[index++](velocity); //call next function in schedule 
+      if(index == schedule.length) clearInterval(interval_id); //clear interval when we've called all functions      
+    }, interval);
   };
 
   var endRound = function() {
