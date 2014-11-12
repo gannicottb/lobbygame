@@ -280,19 +280,6 @@ var LargeWall = (function() {
       console.log("Score ="+players[uid].score);
     }
 
-    //If 'players_scores' div does not exist, create it and append it to the frame
-    //TODO: simplify this by simply adding the score div to the html and accessing it here
-            // That will save all of this code and force you to put the styling into the css where it belongs
-    if(document.getElementById('players_scores') === null)
-    {
-      var scores = document.createElement("div");
-      scores.id = "players_scores";
-      var canvasHeight = $('canvas').last().height();
-      var canvasWidth = $('canvas').last().width(); 
-      $(scores).css({width:canvasWidth, height:canvasHeight, position: 'absolute', opacity: 1});     
-      $(scores).appendTo('#frame');
-    }
-    
     document.getElementById('players_scores').innerHTML = new EJS({
         url: 'templates/scores.ejs'
       }).render({

@@ -296,9 +296,7 @@ header {
 .right{
   float: right;
 }
-#players_scores{
-  color: white;
-}
+
 
 .left_corner{
   position: absolute;
@@ -336,5 +334,31 @@ header {
 }
 #game_canvas{
   position: absolute;
+}
+#players_scores{
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  opacity: 1;
+  display: none;
+  color: black;
+} 
+#scores_table{
+  z-index = 3;
+  margin:auto;
+  background-color: white;
+  border-color: blue;
+  border-style: solid;
+  border-width: 4px;
+  text-align: center;
+  position:relative;
+  width: 30%;
+  top: 50%; 
+  transform: translateY(-50%);
+}
+.score_cell{
+  height: 30px;
+  font-size: 18px;
 }
 
