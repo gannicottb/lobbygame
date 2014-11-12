@@ -222,7 +222,7 @@ var LargeWall = (function() {
     //Hide scores at round startdeath
     if(document.getElementById('players_scores') !== null)
     {
-      $('div#players_scores').hide();
+      $('div#players_scores').fadeOut();
     }
 
     document.getElementById('players_display').innerHTML = new EJS({
@@ -304,7 +304,7 @@ var LargeWall = (function() {
         players: players
       });    
     //Shows the 'players_scores' div if it has been hidden in startRound
-    $('div#players_scores').show();
+    $('div#players_scores').fadeIn();
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION});
     // Clear players from current round
