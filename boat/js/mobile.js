@@ -4,6 +4,7 @@ var Mobile = (function() {
   //
   var session = null;
   var uid = null;
+  var user = null;
 
   // Private functions
   //
@@ -14,6 +15,54 @@ var Mobile = (function() {
 
   var disableQueueButton = function(){
     $("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
+  };
+
+  var changeNameClick = function(){
+
+    var name_container = $('#name_container');
+    var display = name_container.find('.display');
+    var edit = name_container.find('.edit');
+
+    // Render the edit_widget with the name
+    edit.html(new EJS({url: 'templates/edit_name.ejs'}).render(user));
+    edit.find('input').prop('autofocus', true);
+
+    //toggle from display to edit
+    toggleViews(display, edit);
+
+    // Wire up the submit button
+    edit.find('button').on('click', function(event) {
+      var edit_name_val = $("#edit_name").val();
+      if(edit_name_val == ""){
+        setName(null); //re render with cached name
+        toggleViews(edit, display);
+      } else {
+        session.call("com.google.boat.changeName", [user.uid, $("#edit_name").val()]).then(
+          function(new_name) {
+            console.info("User",user.uname,"changed their name to",new_name);
+            setName(new_name);
+            toggleViews(edit, display);
+          },
+          function(error) {
+            console.warn("Change name failed", error);
+            setName(); //re render with cached name
+            toggleViews(edit, display);
+          }
+        );
+      }
+    });
+  };
+
+  //Toggles from viewOut to viewIn
+  var toggleViews = function(viewOut, viewIn){
+    viewOut.hide();
+    viewIn.fadeIn();
+  }
+
+  var setName = function(new_name) {
+    new_name = new_name || user.uname // default to user name if no new name is passed
+    user.uname = new_name; //update local user cache
+    $('#name_container .display').html(user.uname);
   };
 
   var waitMessage = function(rounds_to_wait){
@@ -94,22 +143,22 @@ var Mobile = (function() {
     //Log in to the server (and get auto-registered if no uid is present)
     session.call("com.google.boat.login", [uid]).then(
       function(result) {
-        var user = result.user;
+        user = result.user;
 
         uid = user.uid;
         sessionStorage.setItem("uid", uid);       
         
         // Display the username
-        $("#name_container").html(user.uname);
+        $("#name_container .display").html(user.uname);
         document.title = user.uname + " - Wobble Boat";
+
         //Set background color
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
-        //Disable or enable the join queue button?
-        if(result.can_join){
-          enableQueueButton();
-        }
 
-        console.log("user is logged in with uid " + uid + ", and their color is " + user.color);
+        //Disable or enable the join queue button?
+        if(result.can_join) enableQueueButton();
+
+        console.log("User", user.uname,"is logged in with uid " + uid + ", and their color is " + user.color);
 
         joinQueue();
       },
@@ -120,6 +169,8 @@ var Mobile = (function() {
 
     //Join Queue button handler
     $("#join_queue").on('click', joinQueue);
+    //Change name handler
+    $('#name_container .display').on('click', changeNameClick);
 
     //Declare move left handler
     $("#move_left").on('click', function(event) {
