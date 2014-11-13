@@ -3,7 +3,7 @@ body {
 }
 
 .wrap {
-	width: 60vh;
+	width: 80vw;
 	height: 80vh;
 	margin: auto;
 }
@@ -20,6 +20,10 @@ body {
 	padding-top: 10px;
 	padding-bottom: 10px;
 	box-shadow: 0px 5px 5px;
+}
+
+#name_container .edit {
+	display: none;
 }
 
 #queue {
