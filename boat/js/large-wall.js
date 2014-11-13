@@ -240,7 +240,7 @@ var LargeWall = (function() {
     
     //Add function calls to this schedule to set the routine for the round
     var schedule = [
-      leftPush(vel),      
+      leftPush,      
       function(vel){
         velocity = 1.5;
         rightPush(vel);        
