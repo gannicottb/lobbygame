@@ -175,23 +175,22 @@ var LargeWall = (function() {
   //
   var changeName = function(args, kwargs, details) {
     var user = lookup(args[0]);
-    var new_name = args[1];
-    
-    if(new_name != ""){
-      user.uname = new_name;      
-      console.log("User " + user.uid + " changed their name to " + new_name);
-      //update anywhere that the user's name shows up
-      document.getElementById('players_display').innerHTML = new EJS({
-        url: 'templates/players.ejs'
-      }).render({
-        data: players
-      });
-      document.getElementById('queue_display').innerHTML = new EJS({
-        url: 'templates/queue.ejs'
-      }).render({
-        data: queue
-      });
-    }
+    var new_name = args[1];    
+   
+    user.uname = new_name;      
+    console.log("User " + user.uid + " changed their name to " + new_name);
+
+    //update anywhere that the user's name shows up
+    document.getElementById('players_display').innerHTML = new EJS({
+      url: 'templates/players.ejs'
+    }).render({
+      data: players
+    });
+    document.getElementById('queue_display').innerHTML = new EJS({
+      url: 'templates/queue.ejs'
+    }).render({
+      data: queue
+    });    
 
     return user.uname; //receipt
   };
