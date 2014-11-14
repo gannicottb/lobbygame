@@ -395,9 +395,23 @@ var LargeWall = (function() {
   }; 
 
   var playerDeathCallback = function(uid) {
-    players[uid].time = new Date().getTime() - round_start;
-    players[uid].dead = true;
-    console.log("Player " + uid + " is dead!");
+
+    if(Object.keys(players).length>0)
+    {
+      players[uid].time = new Date().getTime() - round_start;
+      players[uid].dead = true;
+      console.log("Player " + uid + " is dead!");    
+          
+      var all_dead = true;
+
+      for (var uid in players) {
+        if(players[uid].dead===false)
+          all_dead = false;        
+      }
+
+      if(all_dead)      
+        endRound();
+    }
   };
 
 
