@@ -333,10 +333,13 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
 
 TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity) {
   this.wave_starter_l_velocity = velocity;
+  console.info("WaveStarter left set to",this.wave_starter_l_velocity);
 }
 
 TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity) {
   this.wave_starter_r_velocity = velocity;
+  console.info("WaveStarter right set to",this.wave_starter_r_velocity);
+
 }
 
 // Only for testing
