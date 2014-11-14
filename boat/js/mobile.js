@@ -112,7 +112,7 @@ var Mobile = (function() {
   };
 
   var onQueueUpdate = function(args, kwargs){
-    new EJS({url:'templates/queue.ejs'}).update('queue', {data: args});
+    //$('#queue').html(new EJS({url:'templates/queue.ejs'}).update('queue', {data: args}));
   };
 
   var onRoundEnd = function(args, kwargs){
