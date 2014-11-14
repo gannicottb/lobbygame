@@ -23,7 +23,9 @@ var LargeWall = (function() {
 
   var roundCountDown = Timer(); //shouldn't this be new Timer()?
   var prepareCountDown = Timer();      
-  var getReadyCountDown = Timer();                                               
+  var getReadyCountDown = Timer();   
+
+  var wave_interval = null;                                            
 
   var round_start = null;
 
@@ -293,11 +295,15 @@ var LargeWall = (function() {
     //Run all commands in schedule at specified interval
     //
     schedule[index++](velocity); // run the first command
-    var interval_id = setInterval(function(){
+    wave_interval = setInterval(function(){
       schedule[index++](velocity); //call next function in schedule 
-      if(index == schedule.length) clearInterval(interval_id); //clear interval when we've called all functions      
+      if(index == schedule.length) clearInterval(wave_interval); //clear interval when we've called all functions      
     }, interval);
   };
+
+  var stopWaves = function(){
+    clearInterval(wave_interval);
+  }
 
   var endRound = function() {
     console.log("end Round");
@@ -347,8 +353,8 @@ var LargeWall = (function() {
     //Shows the 'players_scores' div if it has been hidden in startRound
     $('div#players_scores').fadeIn();
 
-    session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION});
-    
+    session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION}); 
+
     // Reset the wave machine
     restart();
     
@@ -414,8 +420,10 @@ var LargeWall = (function() {
           all_dead = false;        
       }
 
-      if(all_dead)      
+      if(all_dead){ // End the round early
+        stopWaves();
         endRound();
+      }      
     }
   };
 
