@@ -177,14 +177,14 @@ TestWaveMachine.prototype.Step = function() {
   this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
 
   if (this.waveStarterL.GetWorldCenter().x <= -7) {
-    this.directionL = 1;
+    this.directionL = 1;    
   } else if (this.waveStarterL.GetWorldCenter().x >= -5) {
     this.directionL = -0.5;
   }
   this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_l_velocity * this.directionL, 0));
   
   if (this.waveStarterR.GetWorldCenter().x >= 7) {
-    this.directionR = -1;
+    this.directionR = -1;    
   } else if (this.waveStarterR.GetWorldCenter().x <= 5) {
     this.directionR = 0.5;
   }
@@ -325,10 +325,13 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
 
 TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity){
   this.wave_starter_l_velocity = velocity;
+  console.info("WaveStarter left set to",this.wave_starter_l_velocity);
 }
 
 TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity){
   this.wave_starter_r_velocity = velocity;
+  console.info("WaveStarter right set to",this.wave_starter_r_velocity);
+
 }
 
 // Only for testing
