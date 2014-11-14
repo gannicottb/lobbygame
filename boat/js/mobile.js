@@ -5,6 +5,7 @@ var Mobile = (function() {
   var session = null;
   var uid = null;
   var user = null;
+  var first_time = true;
 
   // Private functions
   //
@@ -115,6 +116,13 @@ var Mobile = (function() {
     //$('#queue').html(new EJS({url:'templates/queue.ejs'}).update('queue', {data: args}));
   };
 
+  var onRoundStart = function(args, kwargs){
+    if(first_time){
+      first_time = false;
+      $('#tutorial').show();
+    }
+  }
+
   var onRoundEnd = function(args, kwargs){
     if (args.some(function(p_uid){return p_uid == uid})){
       
@@ -132,6 +140,10 @@ var Mobile = (function() {
           enableQueueButton();
         }
       });
+
+      if($('#tutorial').is(':visible')){
+        $('#tutorial').hide();
+      }
     }
   };
 
@@ -187,6 +199,7 @@ var Mobile = (function() {
     });
 
     session.subscribe("com.google.boat.queueUpdate", onQueueUpdate);
+    session.subscribe("com.google.boat.roundStart", onRoundStart);
     session.subscribe("com.google.boat.roundEnd", onRoundEnd);
   }
 

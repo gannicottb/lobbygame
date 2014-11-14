@@ -260,6 +260,11 @@ var LargeWall = (function() {
     });
     console.log("animals added");
 
+    session.publish('com.google.boat.roundStart', [], {
+      round_duration: config.ROUND_DURATION, 
+      get_ready_duration: config.GET_READY_DURATION
+    });
+
   };
 
   var startWaves = function(){

@@ -35,10 +35,12 @@ body {
 
 #controls{
 	/*5% name container, 95% controls*/
-	height: 95%;
+	height: 90%;
+	position: relative;
 }
 
 #tutorial{
+	display: none;
 	height: 70%;
 }
 
@@ -67,6 +69,10 @@ body {
 	
 	border-radius: 25px;
 	height: 20%;
+
+	position: absolute;
+	bottom: 5%;
+	transform: translateX(-50%);
 }
 
 #join_queue.enabled {
