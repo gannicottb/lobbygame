@@ -10,45 +10,51 @@ function TestWaveMachine() {
   this.speed = 5;
 
   this.wave_starter_l_velocity = 0;
-  this.wave_starter_r_velocity = 0;  
-
+  this.wave_starter_r_velocity = 0;
+  this.useWaveStarter = false;
 
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
 
-  // this.bd.type = b2_dynamicBody;
+  this.bd.type = this.useWaveStarter ? b2_staticBody : b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
 
-  // var b1 = new b2PolygonShape();
-  // b1.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(8, 0), 0);
-  // body.CreateFixtureFromShape(b1, 5);
 
-  // var b2 = new b2PolygonShape();
-  // b2.SetAsBoxXYCenterAngle(0.05, 1, new b2Vec2(-8, 0), 0);
-  // body.CreateFixtureFromShape(b2, 5);
+  if (!this.useWaveStarter) {
+    var b1 = new b2PolygonShape();
+    b1.SetAsBoxXYCenterAngle(0.05, 3, new b2Vec2(5, 0), 0);
+    body.CreateFixtureFromShape(b1, 5);
 
-  // var b3 = new b2PolygonShape();
-  // b3.SetAsBoxXYCenterAngle(4, 0.05, new b2Vec2(0, 1), 0);
-  // body.CreateFixtureFromShape(b3, 5);
+    var b2 = new b2PolygonShape();
+    b2.SetAsBoxXYCenterAngle(0.05, 3, new b2Vec2(-5, 0), 0);
+    body.CreateFixtureFromShape(b2, 5);
+
+    var b3 = new b2PolygonShape();
+    b3.SetAsBoxXYCenterAngle(5, 0.05, new b2Vec2(0, 5), 0);
+    body.CreateFixtureFromShape(b3, 5);
+  }
 
   var b4 = new b2PolygonShape();
-  b4.SetAsBoxXYCenterAngle(8, 0.05, new b2Vec2(0, -1), 0);
+  b4.SetAsBoxXYCenterAngle(5, 0.05, new b2Vec2(0, -1), 0);
   body.CreateFixtureFromShape(b4, 5);
 
-  this.bd = new b2BodyDef();
-  this.bd.type = b2_dynamicBody;
-  this.bd.allowSleep = false;
-  this.bd.position.Set(0, 1);
-  var waveStarterBoardShape = new b2PolygonShape();
-  waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(-7, 0.05), 0);
-  this.waveStarterL = world.CreateBody(this.bd);
-  this.waveStarterL.CreateFixtureFromShape(waveStarterBoardShape, 100);
+  if (this.useWaveStarter) {
+    this.bd = new b2BodyDef();
+    this.bd.type = b2_dynamicBody;
+    this.bd.allowSleep = false;
+    this.bd.position.Set(0, 1);
+    var waveStarterBoardShape = new b2PolygonShape();
+    waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(-7, 0.05), 0);
+    this.waveStarterL = world.CreateBody(this.bd);
+    this.waveStarterL.CreateFixtureFromShape(waveStarterBoardShape, 100);
 
-  waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(7, 0.05), 0);
-  this.waveStarterR = world.CreateBody(this.bd);
-  this.waveStarterR.CreateFixtureFromShape(waveStarterBoardShape, 100);
+    waveStarterBoardShape.SetAsBoxXYCenterAngle(1, 1, new b2Vec2(7, 0.05), 0);
+    this.waveStarterR = world.CreateBody(this.bd);
+    this.waveStarterR.CreateFixtureFromShape(waveStarterBoardShape, 100);
+  }
+
 
   var boatBodyRef = new b2BodyDef();
   boatBodyRef.type = b2_dynamicBody;
@@ -57,22 +63,22 @@ function TestWaveMachine() {
   boatBodyRef.userData = 0xffffff;
   // boat body
   this.boat_body = world.CreateBody(boatBodyRef);
-  
+
 
   var boat_shape = new b2PolygonShape();
   // boat_shape.vertices.push(new b2Vec2(-1.1, 0.05));
   // boat_shape.vertices.push(new b2Vec2(1.1, 0.05));
-  boat_shape.vertices.push(new b2Vec2(1.5, 0.00));
+  boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
   // boat_shape.vertices.push(new b2Vec2(0.8, -0.05));
-  boat_shape.vertices.push(new b2Vec2(1.5, -0.12));
+  boat_shape.vertices.push(new b2Vec2(1.8, -0.15));
   // boat_shape.vertices.push(new b2Vec2(0.3, -0.15));
   // boat_shape.vertices.push(new b2Vec2(-0.3, -0.15));
-  boat_shape.vertices.push(new b2Vec2(-1.5, -0.12));
+  boat_shape.vertices.push(new b2Vec2(-1.8, -0.15));
   // boat_shape.vertices.push(new b2Vec2(-0.8, -0.05));
-  boat_shape.vertices.push(new b2Vec2(-1.5, 0.00));
+  boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
 
   var boat_fixture = new b2FixtureDef();
-  boat_fixture.friction = 0.1;
+  boat_fixture.friction = 2;
   boat_fixture.density = 0.3;
   boat_fixture.shape = boat_shape;
 
@@ -86,7 +92,7 @@ function TestWaveMachine() {
   var jd = new b2RevoluteJointDef();
   jd.motorSpeed = 0.05 * Math.PI;
   jd.maxMotorTorque = 1e7;
-  jd.enableMotor = false;
+  jd.enableMotor = this.useWaveStarter ? false : true;
   this.joint = jd.InitializeAndCreate(ground, body, new b2Vec2(0, 1));
   this.time = 0;
 
@@ -119,12 +125,12 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
   var fixtureB = contact.GetFixtureB();
 
   // If the boat and a player are in contact, then reset the number of steps the player has been not touching
-  if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
+  if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
     console.log("Begin contact for Fixture B", fixtureB.body.touchingBoat, fixtureB.body.stepsAway);
   }
-  
+
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
     if (userData) {
@@ -144,7 +150,7 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   var fixtureB = contact.GetFixtureB();
 
   // If the boat and a player stop touching, set the player flag
-  if(fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()){
+  if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.touchingBoat = false;
     console.log("End contact for Fixture A", fixtureB.body.touchingBoat);
   }
@@ -174,21 +180,23 @@ TestWaveMachine.prototype.Step = function() {
   this.time += 1 / 60;
 
   // Wave machine speed
-  this.joint.SetMotorSpeed(0.05 * Math.cos(this.time) * Math.PI);
+  this.joint.SetMotorSpeed(0.02 * this.wave_starter_l_velocity * Math.cos(this.time) * Math.PI);
 
-  if (this.waveStarterL.GetWorldCenter().x <= -7) {
-    this.directionL = 1;
-  } else if (this.waveStarterL.GetWorldCenter().x >= -5) {
-    this.directionL = -0.5;
+  if (this.useWaveStarter) {
+    if (this.waveStarterL.GetWorldCenter().x <= -7) {
+      this.directionL = 1;
+    } else if (this.waveStarterL.GetWorldCenter().x >= -5) {
+      this.directionL = -0.5;
+    }
+    this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_l_velocity * this.directionL, 0));
+
+    if (this.waveStarterR.GetWorldCenter().x >= 7) {
+      this.directionR = -1;
+    } else if (this.waveStarterR.GetWorldCenter().x <= 5) {
+      this.directionR = 0.5;
+    }
+    this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_r_velocity * this.directionR, 0));
   }
-  this.waveStarterL.SetLinearVelocity(new b2Vec2(this.wave_starter_l_velocity * this.directionL, 0));
-  
-  if (this.waveStarterR.GetWorldCenter().x >= 7) {
-    this.directionR = -1;
-  } else if (this.waveStarterR.GetWorldCenter().x <= 5) {
-    this.directionR = 0.5;
-  }
-  this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_r_velocity * this.directionR, 0));
 
   // The camera should follow the boat
   camera.position.x = this.boat_body.GetWorldCenter().x;
@@ -200,11 +208,11 @@ TestWaveMachine.prototype.Step = function() {
     if (animal.isDead === true) continue;
 
     // Is this animal dead?
-    if(!animal.body.touchingBoat){
+    if (!animal.body.touchingBoat) {
 
       animal.body.stepsAway++;
 
-      if(animal.body.stepsAway >= this.DEATH_THRESHOLD){
+      if (animal.body.stepsAway >= this.DEATH_THRESHOLD) {
 
         animal.spring.SetMotorSpeed(0);
 
@@ -224,15 +232,15 @@ TestWaveMachine.prototype.Step = function() {
         world.DestroyJoint(animal.spring);
         world.DestroyBody(animal.body);
         world.DestroyBody(animal.wheel);
-        
+
         animal.isDead = true;
         if (this.deathHandler != null && this.deathHandler != undefined) {
           this.deathHandler(animal.userId);
-          
+
         }
       }
     }
-    
+
   };
 };
 
@@ -323,11 +331,11 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   // this.animals[animal].body.ApplyForce(f, p, true);
 };
 
-TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity){
+TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity) {
   this.wave_starter_l_velocity = velocity;
 }
 
-TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity){
+TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity) {
   this.wave_starter_r_velocity = velocity;
 }
 
