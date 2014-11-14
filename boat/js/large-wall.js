@@ -343,6 +343,10 @@ var LargeWall = (function() {
     $('div#players_scores').fadeIn();
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION});
+    
+    // Reset the wave machine
+    restart();
+    
     // Clear players from current round
     players = {};
 
@@ -352,7 +356,7 @@ var LargeWall = (function() {
       data: players
     });
     round_start = null;
-    setTimeout(restart, 1000);
+    
   };
 
   var restart = function() {
