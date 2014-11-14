@@ -180,7 +180,8 @@ function rightPush(velocity){
 };
 
 function bothPush(velocity){
-  //push both pushers
+  test.setWaveStarterLeftVelocity(velocity);
+  test.setWaveStarterRightVelocity(velocity);
   console.info("push both at", velocity);
 };
 

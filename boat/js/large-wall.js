@@ -159,7 +159,11 @@ var LargeWall = (function() {
     var ql = pushToQueue(user);
     var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
     
-    tryStartRound();
+    //tryStartRound();
+    if(state == WAIT && !prepareCountDown.counting()){
+      prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
+      prepareCountDown.start();      
+    }
 
     return rounds_until_user_plays;
   };
@@ -259,15 +263,23 @@ var LargeWall = (function() {
   };
 
   var startWaves = function(){
-    var velocity = 1.3;
+    var velocity = 1.4;
     var index = 0;
     
     //Add function calls to this schedule to set the routine for the round
     var schedule = [
-      leftPush,      
+      rightPush,
       function(vel){
-        velocity = 1.5;
-        rightPush(vel);        
+        velocity = vel + .1;
+        rightPush(velocity);
+      },
+      function(vel){
+        velocity = vel + .1;
+        rightPush(velocity);
+      },
+      function(vel){
+        velocity = vel + .1;
+        rightPush(velocity);
       }
     ];
 
