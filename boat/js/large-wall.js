@@ -173,6 +173,32 @@ var LargeWall = (function() {
 
     return rounds_until_user_plays;
   };
+
+  var leaveQueue = function(args){
+    var user = lookup(args[0]);
+
+    if(!user.logged_in){
+      throw ["User "+args[0]+" can't leave queue if not logged in"];
+    }
+
+    //Remove them from the queue
+    if(enqueued[user.uid]){
+      var idx_to_remove = null;
+      for(var i = 0, len = queue.length; i < len; i++){
+        if(queue[i].uid === user.uid){
+          // Found 'em!
+          idx_to_remove = i;
+          // Quit looking
+          break;
+        }
+      }
+      if(idx_to_remove !== null){
+        queue.splice(idx_to_remove, 1);
+        enqueued[user.uid] = false;               
+      }
+    }    
+ 
+  }
   ////////////////////
 
   var onmove = function(args, kwargs, details) {
@@ -500,6 +526,7 @@ var LargeWall = (function() {
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.changeName', changeName);
     session.register('com.google.boat.joinQueue', joinQueue);
+    session.register('com.google.boat.leaveQueue', leaveQueue);
 
 
   };

@@ -61,24 +61,39 @@ body {
     100% {-webkit-transform: rotate(30deg)}
 }
 
-#join_queue {
-	font-family: 'Roboto', sans-serif;
-	font-size: large;
-	color: white;
-	font-weight: bold;
-	
-	border-radius: 25px;
-	height: 20%;
 
+#queue_button_container {	
+	height: 20%;
+	left: 50%;
 	position: absolute;
 	bottom: 5%;
 	transform: translateX(-50%);
 }
+#queue_button_container button {
+	font-family: 'Roboto', sans-serif;
+	font-size: large;
+	color: white;
+	font-weight: bold;	
+	border-radius: 25px;
+	height: 100%;
+}
+#queue_button_container button.disabled{
+	background: linear-gradient(to bottom, lightgray, gray);
+}
 
-#join_queue.enabled {
+#queue_button_container #join_queue {
+	background: linear-gradient(to bottom, lightgreen, green);
+}
+#queue_button_container #leave_queue {
+	background: linear-gradient(to bottom, orange, red);
+}
+
+/*#join_queue.enabled {
 	background: linear-gradient(to bottom, lightgreen, green);
 }
 
 #join_queue.disabled {
 	background: linear-gradient(to bottom, lightgray, gray);
-}
+}*/
+
+

@@ -11,11 +11,22 @@ var Mobile = (function() {
   //
 
   var enableQueueButton = function(){
-    $("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+    //$("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
+    var queue_button_container = $('#queue_button_container');
+    var joinQueueButton = queue_button_container.find('#join_queue');
+    var leaveQueueButton = queue_button_container.find('#leave_queue');
+    
+    toggleViews(leaveQueueButton, joinQueueButton);
   };
 
   var disableQueueButton = function(){
-    $("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
+    //$("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
+    var queue_button_container = $('#queue_button_container');
+    var joinQueueButton = queue_button_container.find('#join_queue');
+    var leaveQueueButton = queue_button_container.find('#leave_queue');
+    toggleViews(leaveQueueButton, joinQueueButton);
+
+    toggleViews(joinQueueButton, leaveQueueButton);
   };
 
   var changeNameClick = function(){
@@ -86,9 +97,24 @@ var Mobile = (function() {
     session.call("com.google.boat.joinQueue", [uid]).then(
       function(rounds_to_wait){
         alertify.success(waitMessage(rounds_to_wait));
+        //Instead of disabling, switch to Leave Queue button
         disableQueueButton();
+      },
+      function(error){
+        console.error(error.args[0]);
       }
     );
+  };
+
+  var leaveQueue = function(){
+    session.call("com.google.boat.leaveQueue", [uid]).then(
+      function(success){
+        alertify.success("You left the queue");
+        enableQueueButton();
+      },
+      function(error){
+        console.error(error.args[0]);
+      })
   };
 
   var handleEvent = function(event) {
@@ -121,6 +147,9 @@ var Mobile = (function() {
       first_time = false;
       $('#tutorial').show();
     }
+
+    
+    $("#queue_button_container").find('button').prop('disabled', true).removeClass('enabled').addClass('disabled');    
   }
 
   var onRoundEnd = function(args, kwargs){
@@ -144,6 +173,8 @@ var Mobile = (function() {
       if($('#tutorial').is(':visible')){
         $('#tutorial').hide();
       }
+
+      $("#queue_button_container").find('button').prop('disabled', false).removeClass('disabled').addClass('enabled');
     }
   };
 
@@ -181,6 +212,8 @@ var Mobile = (function() {
 
     //Join Queue button handler
     $("#join_queue").on('click', joinQueue);
+    $("#leave_queue").on('click', leaveQueue);
+
     //Change name handler
     $('#name_container .display').on('click', changeNameClick);
 
