@@ -2,8 +2,7 @@ var LargeWall = (function() {
 
   //private members
   var session = null;
-  var players = {}; // uid -> animalId
-  var nextIdx = 0;
+  var players = {}; //player kv pairs are uid -> user object
 
   var qrcode_opts = {
     text: 'http://'+document.location.host+'/mobile.html',
@@ -18,7 +17,7 @@ var LargeWall = (function() {
   var right_qrcode = new QRCode($(".right_corner.qr_code")[0], qrcode_opts);
 
   // User management
-  var users = [], //user objects
+  var users = [], //uid -> user objects
     uidCounter = 0;
 
   var roundCountDown = Timer(); //shouldn't this be new Timer()?
@@ -112,22 +111,37 @@ var LargeWall = (function() {
   };
 
   var register = function() {
+    
+
+    // users[uidCounter] = {
+    //   uid: uidCounter,
+    //   uname: "guest" + uidCounter,
+    //   logged_in: true,
+    //   color: rgb,
+    //   score: 0,
+    //   time: 0,
+    //   dead: false
+    // };
+    addUser(uidCounter);
+    return users[uidCounter++];
+  };
+
+  var addUser = function(id){
     // Make sure the color is bright
     var genColor = HSVtoRGB(Math.random(), Math.random(), (70.0 + Math.random() * 30.0) / 100.0);
     console.log("gen color: " + genColor.r + ", " + genColor.g + ", " + genColor.b);
     var rgb = (genColor.r << 16) + (genColor.g << 8) + genColor.b;
-
-    users[uidCounter] = {
-      uid: uidCounter,
-      uname: "guest" + uidCounter,
+    // Create a new user object and store it in users
+    users[id] = {
+      uid: id,
+      uname: "guest" + id,
       logged_in: true,
       color: rgb,
       score: 0,
       time: 0,
       dead: false
     };
-    return users[uidCounter++];
-  };
+  }
 
   var login = function(args) {
     var user = lookup(args[0]);
@@ -405,6 +419,8 @@ var LargeWall = (function() {
     return user;
   }; 
 
+  // Callbacks
+
   var playerDeathCallback = function(uid) {
 
     if(Object.keys(players).length>0)
@@ -427,6 +443,16 @@ var LargeWall = (function() {
     }
   };
 
+  var onRefresh = function(){
+    
+    // Convert users object to JSON and cache it   
+
+    var users_json = JSON.stringify(users);
+    sessionStorage.setItem("users_backup", users_json);
+    sessionStorage.setItem("uid_counter", uidCounter);
+    
+  }
+
 
   var main = function(a_session) {
     session = a_session;
@@ -445,8 +471,29 @@ var LargeWall = (function() {
       loadQRCode();
     }
 
+    //If there is a uid backup, add them to the users object
+    var users_json = sessionStorage.getItem("users_backup");
+    if(users_json !== undefined && users_json !== null && users_json !== ""){
+      users = JSON.parse(users_json);
+      uidCounter = Number(sessionStorage.getItem("uid_counter") || uidCounter);
+
+      // //Add blank user objects for each uid in the backup
+      // uid_backups = uids.split(',');
+      // for (var i = 0, len = uid_backups.length; i < len; i++) {
+      //   var uid = Number(uid_backups[i]);
+      //   addUser(uid);
+      //   if(i == len - 1){ // set the uidCounter to last id backup + 1
+      //     uidCounter = uid + 1;
+      //   }
+      // }
+
+    }
+
     //Set the onPlayerDeath callback (defined in testbed.js)
     onPlayerDeath(playerDeathCallback);
+
+    //Detect when the backend gets refreshed
+    $(window).on('beforeunload', onRefresh);
 
     // grab URL params from the browser and set config variables  
     location.search.slice(1).split('&').map(function(str) {
