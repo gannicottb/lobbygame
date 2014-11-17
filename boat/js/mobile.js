@@ -101,6 +101,7 @@ var Mobile = (function() {
         disableQueueButton();
       },
       function(error){
+        disableQueueButton();
         console.error(error.args[0]);
       }
     );
@@ -124,17 +125,20 @@ var Mobile = (function() {
     $('#ac').html('Raw Position: ' + x + ' ' + y);
 
     if (y > 15) {
-      session.call("com.google.boat.move", [Number(uid), -1]).then(
-        session.log, session.log
-      );
+      session.call("com.google.boat.move", [Number(uid), -1]);
+      // .then(
+      //   session.log, session.log
+      // );
     } else if (y < -15) {
-      session.call("com.google.boat.move", [Number(uid), 1]).then(
-        session.log, session.log
-      );
+      session.call("com.google.boat.move", [Number(uid), 1]);
+      // .then(
+      //   session.log, session.log
+      // );
     } else {
-      session.call("com.google.boat.move", [Number(uid), 0]).then(
-        session.log, session.log
-      );
+      session.call("com.google.boat.move", [Number(uid), 0]);
+      // .then(
+      //   session.log, session.log
+      // );
     }
   };
 
@@ -149,7 +153,7 @@ var Mobile = (function() {
     }
 
     
-    $("#queue_button_container").find('button').prop('disabled', true).removeClass('enabled').addClass('disabled');    
+    $("#queue_button_container").find('#leave_queue').prop('disabled', true).removeClass('enabled').addClass('disabled');    
   }
 
   var onRoundEnd = function(args, kwargs){
@@ -217,19 +221,19 @@ var Mobile = (function() {
     //Change name handler
     $('#name_container .display').on('click', changeNameClick);
 
-    //Declare move left handler
-    $("#move_left").on('click', function(event) {
-      session.call("com.google.boat.move", [Number(uid), 0]).then(
-        session.log, session.log
-      );
-    });
+    // //Declare move left handler
+    // $("#move_left").on('click', function(event) {
+    //   session.call("com.google.boat.move", [Number(uid), 0]).then(
+    //     session.log, session.log
+    //   );
+    // });
 
-    //Declare move right event handler
-    $("#move_right").on('click', function(event) {
-      session.call("com.google.boat.move", [Number(uid), 1]).then(
-        session.log, session.log
-      );
-    });
+    // //Declare move right event handler
+    // $("#move_right").on('click', function(event) {
+    //   session.call("com.google.boat.move", [Number(uid), 1]).then(
+    //     session.log, session.log
+    //   );
+    // });
 
     session.subscribe("com.google.boat.queueUpdate", onQueueUpdate);
     session.subscribe("com.google.boat.roundStart", onRoundStart);

@@ -78,7 +78,7 @@ body {
 	height: 100%;
 }
 #queue_button_container button.disabled{
-	background: linear-gradient(to bottom, lightgray, gray);
+	background: linear-gradient(to bottom, lightgray, gray) !important;
 }
 
 #queue_button_container #join_queue {
