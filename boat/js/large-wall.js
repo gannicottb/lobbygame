@@ -110,18 +110,7 @@ var LargeWall = (function() {
     }
   };
 
-  var register = function() {
-    
-
-    // users[uidCounter] = {
-    //   uid: uidCounter,
-    //   uname: "guest" + uidCounter,
-    //   logged_in: true,
-    //   color: rgb,
-    //   score: 0,
-    //   time: 0,
-    //   dead: false
-    // };
+  var register = function() {    
     addUser(uidCounter);
     return users[uidCounter++];
   };
@@ -131,6 +120,7 @@ var LargeWall = (function() {
     var genColor = HSVtoRGB(Math.random(), Math.random(), (70.0 + Math.random() * 30.0) / 100.0);
     console.log("gen color: " + genColor.r + ", " + genColor.g + ", " + genColor.b);
     var rgb = (genColor.r << 16) + (genColor.g << 8) + genColor.b;
+    
     // Create a new user object and store it in users
     users[id] = {
       uid: id,
@@ -443,14 +433,11 @@ var LargeWall = (function() {
     }
   };
 
-  var onRefresh = function(){
-    
+  var onRefresh = function(){    
     // Convert users object to JSON and cache it   
-
     var users_json = JSON.stringify(users);
     sessionStorage.setItem("users_backup", users_json);
-    sessionStorage.setItem("uid_counter", uidCounter);
-    
+    sessionStorage.setItem("uid_counter", uidCounter);    
   }
 
 
@@ -475,18 +462,7 @@ var LargeWall = (function() {
     var users_json = sessionStorage.getItem("users_backup");
     if(users_json !== undefined && users_json !== null && users_json !== ""){
       users = JSON.parse(users_json);
-      uidCounter = Number(sessionStorage.getItem("uid_counter") || uidCounter);
-
-      // //Add blank user objects for each uid in the backup
-      // uid_backups = uids.split(',');
-      // for (var i = 0, len = uid_backups.length; i < len; i++) {
-      //   var uid = Number(uid_backups[i]);
-      //   addUser(uid);
-      //   if(i == len - 1){ // set the uidCounter to last id backup + 1
-      //     uidCounter = uid + 1;
-      //   }
-      // }
-
+      uidCounter = Number(sessionStorage.getItem("uid_counter") || uidCounter);   
     }
 
     //Set the onPlayerDeath callback (defined in testbed.js)
