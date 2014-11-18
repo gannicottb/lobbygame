@@ -140,14 +140,28 @@ var LargeWall = (function() {
       user = register(); // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
     } else if (user.logged_in) {
-      return {user: user, can_join: canJoinQueue(user.uid)}; // they were already logged in, disregard this event.
+      return login_result(user);
     } else if (!user.logged_in) {
       user.logged_in = true // they had a valid id. set them as logged in.
     }
     console.log("Logged in: ", user.uname, user.color);
     //session.publish("com.google.boat.onlogin", [user]);
-    return {user: user, can_join: canJoinQueue(user.uid)}
+    return login_result(user);
   };
+
+  var login_result = function(user){
+    var is_user_playing = Object.keys(players).some(
+      function(p_uid) {
+        return p_uid == user.uid;
+      }
+    );
+
+    return {
+      user: user, 
+      can_join: canJoinQueue(user.uid),
+      playing: is_user_playing
+    };
+  }
 
   var canJoinQueue = function(uid){
     //they can join if they're not queued and not playing
@@ -269,7 +283,7 @@ var LargeWall = (function() {
     updatePlayersDisplay();
     console.log("animals added");
 
-    session.publish('com.google.boat.roundStart', [], {
+    session.publish('com.google.boat.roundStart', Object.keys(players), {
       round_duration: config.ROUND_DURATION, 
       get_ready_duration: config.GET_READY_DURATION
     });

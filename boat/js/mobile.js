@@ -3,14 +3,15 @@ var Mobile = (function() {
   // Private variables
   //
   var session = null;
-  var uid = null;
+  //var uid = null;
   var user = null;
   var first_time = true;
+  var playing = false;
 
   // Private functions
   //
 
-  var enableQueueButton = function(){
+  var switchToJoinQueue = function(){
     //$("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
     var queue_button_container = $('#queue_button_container');
     var joinQueueButton = queue_button_container.find('#join_queue');
@@ -19,7 +20,7 @@ var Mobile = (function() {
     toggleViews(leaveQueueButton, joinQueueButton);
   };
 
-  var disableQueueButton = function(){
+  var switchToLeaveQueue = function(){
     //$("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
     var queue_button_container = $('#queue_button_container');
     var joinQueueButton = queue_button_container.find('#join_queue');
@@ -28,6 +29,14 @@ var Mobile = (function() {
 
     toggleViews(joinQueueButton, leaveQueueButton);
   };
+
+  var lockQueueButton = function(){
+    $("#queue_button_container").find('button').prop('disabled', true).removeClass('enabled').addClass('disabled');
+  }
+
+  var unlockQueueButton = function(){
+    $("#queue_button_container").find('button').prop('disabled', false).removeClass('disabled').addClass('enabled');
+  }
 
   var changeNameClick = function(){
 
@@ -94,24 +103,24 @@ var Mobile = (function() {
   }
 
   var joinQueue = function(){    
-    session.call("com.google.boat.joinQueue", [uid]).then(
+    session.call("com.google.boat.joinQueue", [user.uid]).then(
       function(rounds_to_wait){
         alertify.success(waitMessage(rounds_to_wait));
         //Instead of disabling, switch to Leave Queue button
-        disableQueueButton();
+        switchToLeaveQueue();
       },
       function(error){
-        disableQueueButton();
+        switchToLeaveQueue();
         console.error(error.args[0]);
       }
     );
   };
 
   var leaveQueue = function(){
-    session.call("com.google.boat.leaveQueue", [uid]).then(
+    session.call("com.google.boat.leaveQueue", [user.uid]).then(
       function(success){
         alertify.success("You left the queue");
-        enableQueueButton();
+        switchToJoinQueue();
       },
       function(error){
         console.error(error.args[0]);
@@ -124,22 +133,25 @@ var Mobile = (function() {
     window.console && console.info('Raw Position: x, y: ', x, y);
     $('#ac').html('Raw Position: ' + x + ' ' + y);
 
-    if (y > 15) {
-      session.call("com.google.boat.move", [Number(uid), -1]);
-      // .then(
-      //   session.log, session.log
-      // );
-    } else if (y < -15) {
-      session.call("com.google.boat.move", [Number(uid), 1]);
-      // .then(
-      //   session.log, session.log
-      // );
-    } else {
-      session.call("com.google.boat.move", [Number(uid), 0]);
-      // .then(
-      //   session.log, session.log
-      // );
+    if(user){
+      if (y > 15) {
+        session.call("com.google.boat.move", [Number(user.uid), -1]);
+        // .then(
+        //   session.log, session.log
+        // );
+      } else if (y < -15) {
+        session.call("com.google.boat.move", [Number(user.uid), 1]);
+        // .then(
+        //   session.log, session.log
+        // );
+      } else {
+        session.call("com.google.boat.move", [Number(user.uid), 0]);
+        // .then(
+        //   session.log, session.log
+        // );
+      }      
     }
+
   };
 
   var onQueueUpdate = function(args, kwargs){
@@ -152,13 +164,18 @@ var Mobile = (function() {
       $('#tutorial').show();
     }
 
-    
-    $("#queue_button_container").find('#leave_queue').prop('disabled', true).removeClass('enabled').addClass('disabled');    
+    if (args.some(function(p_uid){return p_uid == user.uid})){
+      //playing = true;
+      lockQueueButton();
+    }   
+        
   }
 
   var onRoundEnd = function(args, kwargs){
-    if (args.some(function(p_uid){return p_uid == uid})){
+    if (args.some(function(p_uid){return p_uid == user.uid})){
       
+      playing = false;
+
       alertify.set({ 
         labels: {
           ok     : "Yes!",
@@ -170,7 +187,7 @@ var Mobile = (function() {
         if (ok) {
           joinQueue();        
         } else {
-          enableQueueButton();
+          switchToJoinQueue();
         }
       });
 
@@ -178,7 +195,7 @@ var Mobile = (function() {
         $('#tutorial').hide();
       }
 
-      $("#queue_button_container").find('button').prop('disabled', false).removeClass('disabled').addClass('enabled');
+      unlockQueueButton();
     }
   };
 
@@ -186,14 +203,13 @@ var Mobile = (function() {
     session = a_session;
     //Check to see if the device already has a user id
     //Note: needs to be localStorage for mobile testing
-    uid = sessionStorage.getItem("uid");
+    var uid = sessionStorage.getItem("uid");
     //Log in to the server (and get auto-registered if no uid is present)
     session.call("com.google.boat.login", [uid]).then(
       function(result) {
         user = result.user;
-
-        uid = user.uid;
-        sessionStorage.setItem("uid", uid);       
+        
+        sessionStorage.setItem("uid", user.uid);       
         
         // Display the username
         $("#name_container .display").html(user.uname);
@@ -203,11 +219,17 @@ var Mobile = (function() {
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
 
         //Disable or enable the join queue button?
-        if(result.can_join) enableQueueButton();
+        if(result.can_join) {
+          //switchToJoinQueue();
+          joinQueue();
+        } 
+        if(result.playing) {
+          lockQueueButton();          
+          switchToLeaveQueue();
+        }
 
-        console.log("User", user.uname,"is logged in with uid " + uid + ", and their color is " + user.color);
+        console.log("User", user.uname,"is logged in with uid " + user.uid + ", and their color is " + user.color);
 
-        joinQueue();
       },
       session.log
     );
