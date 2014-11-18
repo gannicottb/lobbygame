@@ -8,34 +8,26 @@ var Mobile = (function() {
   var first_time = true;
   var playing = false;
 
+  var queue_button_container = $('#queue_button_container');
+  var joinQueueButton = queue_button_container.find('#join_queue');
+  var leaveQueueButton = queue_button_container.find('#leave_queue');
   // Private functions
   //
 
-  var switchToJoinQueue = function(){
-    //$("#join_queue").prop('disabled', false).removeClass('disabled').addClass('enabled');
-    var queue_button_container = $('#queue_button_container');
-    var joinQueueButton = queue_button_container.find('#join_queue');
-    var leaveQueueButton = queue_button_container.find('#leave_queue');
-    
+  var switchToJoinQueue = function(){    
     toggleViews(leaveQueueButton, joinQueueButton);
   };
 
-  var switchToLeaveQueue = function(){
-    //$("#join_queue").prop('disabled', true).removeClass('enabled').addClass('disabled');
-    var queue_button_container = $('#queue_button_container');
-    var joinQueueButton = queue_button_container.find('#join_queue');
-    var leaveQueueButton = queue_button_container.find('#leave_queue');
-    toggleViews(leaveQueueButton, joinQueueButton);
-
+  var switchToLeaveQueue = function(){    
     toggleViews(joinQueueButton, leaveQueueButton);
   };
 
   var lockQueueButton = function(){
-    $("#queue_button_container").find('button').prop('disabled', true).removeClass('enabled').addClass('disabled');
+    queue_button_container.find('button').prop('disabled', true).removeClass('enabled').addClass('disabled');
   }
 
   var unlockQueueButton = function(){
-    $("#queue_button_container").find('button').prop('disabled', false).removeClass('disabled').addClass('enabled');
+    queue_button_container.find('button').prop('disabled', false).removeClass('disabled').addClass('enabled');
   }
 
   var changeNameClick = function(){
@@ -102,14 +94,15 @@ var Mobile = (function() {
     return msg;
   }
 
-  var joinQueue = function(){    
+  var joinQueue = function(){  
     session.call("com.google.boat.joinQueue", [user.uid]).then(
       function(rounds_to_wait){
         alertify.success(waitMessage(rounds_to_wait));
-        //Instead of disabling, switch to Leave Queue button
-        switchToLeaveQueue();
+        switchToLeaveQueue();         
+        
       },
       function(error){
+        //the user is already in the queue or playing
         switchToLeaveQueue();
         console.error(error.args[0]);
       }
@@ -119,8 +112,8 @@ var Mobile = (function() {
   var leaveQueue = function(){
     session.call("com.google.boat.leaveQueue", [user.uid]).then(
       function(success){
-        alertify.success("You left the queue");
-        switchToJoinQueue();
+        alertify.error("You left the queue");
+        switchToJoinQueue();        
       },
       function(error){
         console.error(error.args[0]);
@@ -135,20 +128,11 @@ var Mobile = (function() {
 
     if(user){
       if (y > 15) {
-        session.call("com.google.boat.move", [Number(user.uid), -1]);
-        // .then(
-        //   session.log, session.log
-        // );
+        session.call("com.google.boat.move", [Number(user.uid), -1]);        
       } else if (y < -15) {
-        session.call("com.google.boat.move", [Number(user.uid), 1]);
-        // .then(
-        //   session.log, session.log
-        // );
+        session.call("com.google.boat.move", [Number(user.uid), 1]);        
       } else {
         session.call("com.google.boat.move", [Number(user.uid), 0]);
-        // .then(
-        //   session.log, session.log
-        // );
       }      
     }
 
@@ -159,13 +143,10 @@ var Mobile = (function() {
   };
 
   var onRoundStart = function(args, kwargs){
-    if(first_time){
-      first_time = false;
-      $('#tutorial').show();
-    }
+    
+    $('#tutorial').show();    
 
     if (args.some(function(p_uid){return p_uid == user.uid})){
-      //playing = true;
       lockQueueButton();
     }   
         
@@ -173,8 +154,6 @@ var Mobile = (function() {
 
   var onRoundEnd = function(args, kwargs){
     if (args.some(function(p_uid){return p_uid == user.uid})){
-      
-      playing = false;
 
       alertify.set({ 
         labels: {
@@ -219,13 +198,15 @@ var Mobile = (function() {
         $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
 
         //Disable or enable the join queue button?
-        if(result.can_join) {
-          //switchToJoinQueue();
-          joinQueue();
-        } 
+        // if(result.can_join) {
+        //   switchToJoinQueue();
+        // } 
+
+        joinQueue();
+        
         if(result.playing) {
+          $('#tutorial').show();
           lockQueueButton();          
-          switchToLeaveQueue();
         }
 
         console.log("User", user.uname,"is logged in with uid " + user.uid + ", and their color is " + user.color);
