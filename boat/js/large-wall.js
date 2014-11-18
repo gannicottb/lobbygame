@@ -166,9 +166,9 @@ var LargeWall = (function() {
     var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
     
     //tryStartRound();
-    if(state == WAIT && !prepareCountDown.counting()){
-      prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-      prepareCountDown.start();      
+    if(state == WAIT && !roundCountDown.counting()){
+      roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+      roundCountDown.start();      
     }
 
     return rounds_until_user_plays;
@@ -213,7 +213,7 @@ var LargeWall = (function() {
 
   var tryStartRound = function() {
     // if we have enough players, we're not waiting, and we're not preparing.
-    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !prepareCountDown.counting()) {
+    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !roundCountDown.counting()) {
       startRound();
     }
   };
@@ -237,7 +237,7 @@ var LargeWall = (function() {
 
     //Timing
     //
-    prepareCountDown.set(0, 'prepare', null);
+    roundCountDown.set(0, 'round', null);
 
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
@@ -314,8 +314,8 @@ var LargeWall = (function() {
     state = WAIT;
 
     roundCountDown.set(0, 'round', null);
-    prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-    prepareCountDown.start();
+    roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+    roundCountDown.start();
 
     // Calculate Number of players currently on the boat
     var players_on_boat = 0;
