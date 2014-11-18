@@ -242,7 +242,7 @@ var LargeWall = (function() {
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
     $('#get_ready_timer_box').fadeIn();
-    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {
+    getReadyCountDown.setSimpleCountdown(config.GET_READY_DURATION / 1000, 'get_ready', function() {
       $('#get_ready').html("GO!");
       setTimeout(function(){
         $('#get_ready_timer_box').fadeOut();
@@ -288,9 +288,8 @@ var LargeWall = (function() {
         velocity = vel + .1;
         leftPush(velocity);
       },
-      function(vel){
-        velocity = vel + .1;
-        leftPush(velocity);
+      function(){
+        rain();
       }
     ];
 
