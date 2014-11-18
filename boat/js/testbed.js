@@ -185,6 +185,10 @@ function bothPush(velocity){
   console.info("push both at", velocity);
 };
 
+function rain() {
+  test.Rain();
+};
+
 function onPlayerDeath(callback) {
   test.OnDeath(callback);
 }

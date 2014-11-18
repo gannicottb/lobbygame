@@ -66,16 +66,20 @@ function TestWaveMachine() {
 
 
   var boat_shape = new b2PolygonShape();
-  // boat_shape.vertices.push(new b2Vec2(-1.1, 0.05));
-  // boat_shape.vertices.push(new b2Vec2(1.1, 0.05));
   boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
-  // boat_shape.vertices.push(new b2Vec2(0.8, -0.05));
   boat_shape.vertices.push(new b2Vec2(1.8, -0.15));
-  // boat_shape.vertices.push(new b2Vec2(0.3, -0.15));
-  // boat_shape.vertices.push(new b2Vec2(-0.3, -0.15));
   boat_shape.vertices.push(new b2Vec2(-1.8, -0.15));
-  // boat_shape.vertices.push(new b2Vec2(-0.8, -0.05));
   boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
+
+  // boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
+  // boat_shape.vertices.push(new b2Vec2(1.6, -0.09));
+  // boat_shape.vertices.push(new b2Vec2(1.3, -0.15));
+  // boat_shape.vertices.push(new b2Vec2(0.5, -0.2));
+  // boat_shape.vertices.push(new b2Vec2(-0.5, -0.2));
+  // boat_shape.vertices.push(new b2Vec2(-1.3, -0.15));
+  // boat_shape.vertices.push(new b2Vec2(-1.6, -0.09));
+  // boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
+  
 
   var boat_fixture = new b2FixtureDef();
   boat_fixture.friction = 2;
@@ -174,10 +178,28 @@ TestWaveMachine.prototype.OnDeath = function(callback) {
   this.deathHandler = callback;
 };
 
+TestWaveMachine.prototype.Rain = function() {
+  var psd = new b2ParticleSystemDef();
+  psd.radius = 0.06;
+  psd.dampingStrength = 0.5;
+
+  var particleSystem = world.CreateParticleSystem(psd);
+  var box = new b2PolygonShape();
+
+  box.SetAsBoxXYCenterAngle(0.06, 0.06, new b2Vec2(this.boat_body.GetWorldCenter().x, 3), 0);
+
+
+  var particleGroupDef = new b2ParticleGroupDef();
+
+  particleGroupDef.shape = box;
+  particleGroupDef.flags = b2_waterParticle;
+  particleGroupDef.color = new b2ParticleColor(100, 150, 255, 255);
+  var particleGroup = particleSystem.CreateParticleGroup(particleGroupDef);
+};
 
 TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
-  this.time += 1 / 60;
+  this.time += 1 / 50;
 
   // Wave machine speed
   this.joint.SetMotorSpeed(0.02 * this.wave_starter_l_velocity * Math.cos(this.time) * Math.PI);
