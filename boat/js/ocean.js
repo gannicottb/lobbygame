@@ -132,8 +132,15 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
   if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
-    console.log("Begin contact for Fixture B", fixtureB.body.touchingBoat, fixtureB.body.stepsAway);
+    console.log("Begin contact for Fixture B");
   }
+
+  // If the boat and a player are in contact, then reset the number of steps the player has been not touching
+  // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
+  //   fixtureA.body.stepsAway = 0;
+  //   fixtureA.body.touchingBoat = true;
+  //   console.log("Begin contact for Fixture A");
+  // }
 
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
@@ -156,8 +163,13 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   // If the boat and a player stop touching, set the player flag
   if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.touchingBoat = false;
-    console.log("End contact for Fixture A", fixtureB.body.touchingBoat);
+    console.log("End contact for Fixture B");
   }
+
+  // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
+  //   fixtureA.body.touchingBoat = false;
+  //   console.log("End contact for Fixture A");
+  // }
 
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
@@ -234,12 +246,13 @@ TestWaveMachine.prototype.Step = function() {
 
       animal.body.stepsAway++;
 
+      if(animal.body.stepsAway >= this.DEATH_THRESHOLD / 2) console.debug("Player steps away", animal.body.stepsAway);
+
       if (animal.body.stepsAway >= this.DEATH_THRESHOLD) {
 
         animal.spring.SetMotorSpeed(0);
 
         //DESTROY PLAYER
-        // Unfortunately, this will crash the game. :(
 
         for (var f = 0, max = animal.body.fixtures.length; f < max; f++) {
           // This line is JUST for Three.js
@@ -296,7 +309,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   animal.body = car;
 
   var circle = new b2CircleShape;
-  circle.radius = 0.1;
+  circle.radius = 0.1;  
   fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 2.0;

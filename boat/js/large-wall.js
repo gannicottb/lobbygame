@@ -267,7 +267,8 @@ var LargeWall = (function() {
       $('#get_ready').html("GO!");
       setTimeout(function(){
         $('#get_ready_timer_box').fadeOut();
-      }, 2000);
+      }, config.ROUND_DURATION * .1);
+      console.log("get ready timeout reached");
       startWaves(); // start the ACTION
       roundCountDown.start();
     });
@@ -291,6 +292,7 @@ var LargeWall = (function() {
   };
 
   var startWaves = function(){
+    console.log("startWaves");
     var velocity = 1.4;
     var index = 0;
     
@@ -322,7 +324,9 @@ var LargeWall = (function() {
   };
 
   var stopWaves = function(){
+    leftPush(0);
     clearInterval(wave_interval);
+    wave_interval = null;
   }
 
   var endRound = function() {
@@ -374,6 +378,7 @@ var LargeWall = (function() {
     $('div#players_scores').fadeIn();
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION}); 
+
 
     // Reset the wave machine
     restart();
@@ -466,6 +471,9 @@ var LargeWall = (function() {
       }
 
       if(all_dead){ // End the round early
+        console.info("End early!");
+        getReadyCountDown.set(0, 'get_ready', null);
+        $('#get_ready_timer_box').fadeOut();
         stopWaves();
         endRound();
       }      
