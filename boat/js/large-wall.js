@@ -140,14 +140,28 @@ var LargeWall = (function() {
       user = register(); // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
     } else if (user.logged_in) {
-      return {user: user, can_join: canJoinQueue(user.uid)}; // they were already logged in, disregard this event.
+      return login_result(user);
     } else if (!user.logged_in) {
       user.logged_in = true // they had a valid id. set them as logged in.
     }
     console.log("Logged in: ", user.uname, user.color);
     //session.publish("com.google.boat.onlogin", [user]);
-    return {user: user, can_join: canJoinQueue(user.uid)}
+    return login_result(user);
   };
+
+  var login_result = function(user){
+    var is_user_playing = Object.keys(players).some(
+      function(p_uid) {
+        return p_uid == user.uid;
+      }
+    );
+
+    return {
+      user: user, 
+      can_join: canJoinQueue(user.uid),
+      playing: is_user_playing
+    };
+  }
 
   var canJoinQueue = function(uid){
     //they can join if they're not queued and not playing
@@ -177,12 +191,27 @@ var LargeWall = (function() {
 
     return rounds_until_user_plays;
   };
+
+  var leaveQueue = function(args){
+    var user = lookup(args[0]);
+
+    if(!user.logged_in){
+      throw ["User "+args[0]+" can't leave queue if not logged in"];
+    }
+
+    deleteFromQueue(user);
+
+    updateQueueDisplay();  
+ 
+  }
   ////////////////////
 
   var onmove = function(args, kwargs, details) {
     var uid = args[0];
-    var animalId = players[uid].animalId;
-    moveAnimal(animalId, args[1]);
+    if(players[uid]){
+      var animalId = players[uid].animalId;
+      moveAnimal(animalId, args[1]);      
+    }
   };
 
   // Change user names
@@ -195,16 +224,8 @@ var LargeWall = (function() {
     console.log("User " + user.uid + " changed their name to " + new_name);
 
     //update anywhere that the user's name shows up
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
-    document.getElementById('queue_display').innerHTML = new EJS({
-      url: 'templates/queue.ejs'
-    }).render({
-      data: queue
-    });    
+    updatePlayersDisplay();
+    updateQueueDisplay();  
 
     return user.uname; //receipt
   };
@@ -246,7 +267,7 @@ var LargeWall = (function() {
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
     $('#get_ready_timer_box').fadeIn();
-    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {    
+    getReadyCountDown.setSimpleCountdown(config.GET_READY_DURATION / 1000, 'get_ready', function() {
       $('#get_ready').html("GO!");
       setTimeout(function(){
         $('#get_ready_timer_box').fadeOut();
@@ -258,20 +279,16 @@ var LargeWall = (function() {
     $(timer_label).html("Round Duration");  
     getReadyCountDown.start();
     
-    //Hide scores at round startdeath
+    //Hide scores at round start
     if(document.getElementById('players_scores') !== null)
     {
       $('div#players_scores').fadeOut();
     }
 
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
+    updatePlayersDisplay();
     console.log("animals added");
 
-    session.publish('com.google.boat.roundStart', [], {
+    session.publish('com.google.boat.roundStart', Object.keys(players), {
       round_duration: config.ROUND_DURATION, 
       get_ready_duration: config.GET_READY_DURATION
     });
@@ -293,9 +310,8 @@ var LargeWall = (function() {
         velocity = vel + .1;
         leftPush(velocity);
       },
-      function(vel){
-        velocity = vel + .1;
-        leftPush(velocity);
+      function(){
+        rain();
       }
     ];
 
@@ -372,11 +388,7 @@ var LargeWall = (function() {
     // Clear players from current round
     players = {};
 
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
+    updatePlayersDisplay();
     round_start = null;
     
   };
@@ -396,11 +408,7 @@ var LargeWall = (function() {
     if (!enqueued[user.uid]) {
       queue.push(user);
       enqueued[user.uid] = true;
-      document.getElementById('queue_display').innerHTML = new EJS({
-        url: 'templates/queue.ejs'
-      }).render({
-        data: queue
-      });
+      updateQueueDisplay();
     }
     return queue.length;
   };
@@ -408,14 +416,45 @@ var LargeWall = (function() {
   var popFromQueue = function() {
     var user = queue.shift();
     enqueued[user.uid] = false;
+    updateQueueDisplay();
+    return user;
+  }; 
+
+  var deleteFromQueue = function(user){
+    if(enqueued[user.uid]){
+      var idx_to_remove = null;
+      for(var i = 0, len = queue.length; i < len; i++){
+        if(queue[i].uid === user.uid){
+          // Found 'em!
+          idx_to_remove = i;
+          // Quit looking
+          break;
+        }
+      }
+      if(idx_to_remove !== null){
+        queue.splice(idx_to_remove, 1);
+        enqueued[user.uid] = false;               
+      }
+    } 
+    updateQueueDisplay();
+  }
+
+  // Convenience functions for rendering queue and player visualizations
+
+  var updateQueueDisplay = function(){
     document.getElementById('queue_display').innerHTML = new EJS({
       url: 'templates/queue.ejs'
     }).render({
       data: queue
     });
-    return user;
-  }; 
-
+  }
+  var updatePlayersDisplay = function(){
+    document.getElementById('players_display').innerHTML = new EJS({
+      url: 'templates/players.ejs'
+    }).render({
+      data: players
+    });
+  }
   // Callbacks
 
   var playerDeathCallback = function(uid) {
@@ -495,11 +534,7 @@ var LargeWall = (function() {
     }).render({
       data: config
     });
-    document.getElementById('queue_display').innerHTML = new EJS({
-      url: 'templates/queue.ejs'
-    }).render({
-      data: queue
-    });
+    updateQueueDisplay();
 
     roundCountDown.set(0, 'round', null);
 
@@ -507,6 +542,7 @@ var LargeWall = (function() {
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.changeName', changeName);
     session.register('com.google.boat.joinQueue', joinQueue);
+    session.register('com.google.boat.leaveQueue', leaveQueue);
 
 
   };
