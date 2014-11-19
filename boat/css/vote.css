@@ -370,3 +370,7 @@ header {
   font-size: 30px;
 }
 
+.label{
+  padding-top: 1%;
+  visibility: hidden;
+}

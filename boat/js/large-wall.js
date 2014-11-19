@@ -167,6 +167,10 @@ var LargeWall = (function() {
     
     //tryStartRound();
     if(state == WAIT && !roundCountDown.counting()){
+      //Make label visible and Display "Prepare" label for timer
+      //Using css for visibility preserves the height of the element in the layout
+      $(timer_label).css("visibility", "visible");
+      $(timer_label).html("Preparing for the round");
       roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
       roundCountDown.start();      
     }
@@ -242,7 +246,7 @@ var LargeWall = (function() {
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
     $('#get_ready_timer_box').fadeIn();
-    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {
+    getReadyCountDown.set(config.GET_READY_DURATION / 1000, 'get_ready', function() {    
       $('#get_ready').html("GO!");
       setTimeout(function(){
         $('#get_ready_timer_box').fadeOut();
@@ -250,7 +254,8 @@ var LargeWall = (function() {
       startWaves(); // start the ACTION
       roundCountDown.start();
     });
-
+    //Display label "Round Duration"
+    $(timer_label).html("Round Duration");  
     getReadyCountDown.start();
     
     //Hide scores at round startdeath
@@ -315,6 +320,8 @@ var LargeWall = (function() {
 
     roundCountDown.set(0, 'round', null);
     roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+    //Display "Prepare" label for timer
+    $(timer_label).html("Preparing for the round");    
     roundCountDown.start();
 
     // Calculate Number of players currently on the boat
