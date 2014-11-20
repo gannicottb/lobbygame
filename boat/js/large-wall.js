@@ -6,8 +6,8 @@ var LargeWall = (function() {
 
   var qrcode_opts = {
     text: 'http://'+document.location.host+'/mobile.html',
-    width: $('.wrap').height()/4,
-    height: $('.wrap').height()/4,
+    width: $('.wrap').height()/4 - $('.wrap').width() * .005,
+    height: $('.wrap').height()/4 - $('.wrap').width() * .005,
     colorDark : "#000000",
     colorLight : "#ffffff",
     correctLevel : QRCode.CorrectLevel.H
