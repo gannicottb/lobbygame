@@ -180,9 +180,13 @@ var LargeWall = (function() {
     var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
     
     //tryStartRound();
-    if(state == WAIT && !prepareCountDown.counting()){
-      prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-      prepareCountDown.start();      
+    if(state == WAIT && !roundCountDown.counting()){
+      //Make label visible and Display "Prepare" label for timer
+      //Using css for visibility preserves the height of the element in the layout
+      $(timer_label).css("visibility", "visible");
+      $(timer_label).html("Preparing for the round");
+      roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+      roundCountDown.start();      
     }
 
     return rounds_until_user_plays;
@@ -234,7 +238,7 @@ var LargeWall = (function() {
 
   var tryStartRound = function() {
     // if we have enough players, we're not waiting, and we're not preparing.
-    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !prepareCountDown.counting()) {
+    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !roundCountDown.counting()) {
       startRound();
     }
   };
@@ -257,8 +261,8 @@ var LargeWall = (function() {
     }
 
     //Timing
-    //
-    prepareCountDown.set(0, 'prepare', null);
+    //    
+    roundCountDown.cancel();
 
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
@@ -272,7 +276,8 @@ var LargeWall = (function() {
       startWaves(); // start the ACTION
       roundCountDown.start();
     });
-
+    //Display label "Round Duration"
+    $(timer_label).html("Round Duration");  
     getReadyCountDown.start();
     
     //Hide scores at round start
@@ -333,9 +338,12 @@ var LargeWall = (function() {
     console.log("end Round");
     state = WAIT;
 
-    roundCountDown.set(0, 'round', null);
-    prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-    prepareCountDown.start();
+    //roundCountDown.set(0, 'round', null);
+    roundCountDown.cancel();
+    roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+    //Display "Prepare" label for timer
+    $(timer_label).html("Preparing for the round");    
+    roundCountDown.start();
 
     // Calculate Number of players currently on the boat
     var players_on_boat = 0;
@@ -392,6 +400,9 @@ var LargeWall = (function() {
   };
 
   var restart = function() {
+    for(var uid in users){
+      users[uid].dead = false;
+    }
     resetGame();
     onPlayerDeath(playerDeathCallback);
   };
@@ -457,18 +468,22 @@ var LargeWall = (function() {
 
   var playerDeathCallback = function(uid) {
 
-    if(Object.keys(players).length>0)
+    var player_uids = Object.keys(players);
+
+    if(player_uids.length>0)
     {
       players[uid].time = new Date().getTime() - round_start;
       players[uid].dead = true;
       console.log("Player " + uid + " is dead!");    
           
-      var all_dead = true;
+      // var all_dead = true;
 
-      for (var uid in players) {
-        if(players[uid].dead===false)
-          all_dead = false;        
-      }
+      // for (var uid in players) {
+      //   if(players[uid].dead===false)
+      //     all_dead = false;        
+      // }
+      
+      var all_dead = player_uids.every(function(uid){return players[uid].dead});
 
       if(all_dead){ // End the round early
         console.info("End early!");
@@ -535,16 +550,16 @@ var LargeWall = (function() {
     }).render({
       data: config
     });
+
     updateQueueDisplay();
 
-    roundCountDown.set(0, 'round', null);
+    roundCountDown.set(0, 'round', null);    
 
     session.register('com.google.boat.move', onmove);
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.changeName', changeName);
     session.register('com.google.boat.joinQueue', joinQueue);
     session.register('com.google.boat.leaveQueue', leaveQueue);
-
 
   };
 

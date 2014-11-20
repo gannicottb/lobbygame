@@ -12,8 +12,8 @@ function shuffle(o) { //v1.0
 //Simple Timer object suitable for timing up to 59 minutes
 //+ Brandon Gannicott
 var Timer = function() {
-	var timer_id = null;
-	var time, element_id, endCallback;
+	var timer_id = null, element_id = null, endCallback = null;
+	var time = 0;
 	var isSimpleTimer = false;
 
 	var fmtSeconds = function(seconds) {
@@ -33,7 +33,6 @@ var Timer = function() {
 		element_id = id;
 		endCallback = callback;
 		document.getElementById(element_id).innerHTML = fmtSeconds(time);
-		//update();
 	};
 
 	var setSimpleCountdown = function(t, id, callback) {
@@ -44,8 +43,7 @@ var Timer = function() {
 	var update = function() {
 		document.getElementById(element_id).innerHTML = fmtSeconds(time);
 		if (time == 0) {
-			clearTimeout(timer_id);
-			timer_id = null;
+			cancel();
 			if (endCallback != null) {
 				endCallback();
 			}
@@ -56,10 +54,17 @@ var Timer = function() {
 		}
 	};
 
+	var cancel = function(){
+		t = 0;
+		clearTimeout(timer_id);
+		timer_id = null;
+	}
+
 	return {
 		set: set,
 		setSimpleCountdown: setSimpleCountdown,
 		start: update,
+		cancel: cancel,
 		counting: function() {
 			return timer_id != null;
 		}
