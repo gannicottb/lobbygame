@@ -44,6 +44,8 @@ a > img
   margin-left: auto;
   margin-right: auto;
   text-align: center;
+  color: white;
+  background-color: black;
 }
 
 #header_inner
@@ -297,21 +299,21 @@ header {
   float: right;
 }
 
-
-.left_corner{
+.qr_code{
   position: absolute;
-  top: 74%;
-  left: 1%;
+  top: 75%;
   z-index: 1;
-  border: 4px white solid;
+  background-color: white;
+  padding-bottom: .25%;
+  padding-top: .25%;
 }
-
-.right_corner{
-  position: absolute;
-  top: 74%;
-  right: 1%;
-  z-index: 1;
-  border: 4px white solid;
+.qr_code.left_corner{ 
+  left: 1%;
+  padding-right: .25%;
+}
+.qr_code.right_corner{ 
+  right: 1%;  
+  padding-left: .25%
 }
 
 .bottom_pane{
@@ -367,3 +369,7 @@ header {
   font-size: 30px;
 }
 
+.label{
+  padding-top: 1%;
+  visibility: hidden;
+}

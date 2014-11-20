@@ -6,8 +6,8 @@ var LargeWall = (function() {
 
   var qrcode_opts = {
     text: 'http://'+document.location.host+'/mobile.html',
-    width: $('.wrap').height()/4,
-    height: $('.wrap').height()/4,
+    width: $('.wrap').height()/4 - $('.wrap').width() * .005,
+    height: $('.wrap').height()/4 - $('.wrap').width() * .005,
     colorDark : "#000000",
     colorLight : "#ffffff",
     correctLevel : QRCode.CorrectLevel.H
@@ -140,14 +140,28 @@ var LargeWall = (function() {
       user = register(); // they don't have an id. give them one.
       console.log("Registering: ", user.uname);
     } else if (user.logged_in) {
-      return {user: user, can_join: canJoinQueue(user.uid)}; // they were already logged in, disregard this event.
+      return login_result(user);
     } else if (!user.logged_in) {
       user.logged_in = true // they had a valid id. set them as logged in.
     }
     console.log("Logged in: ", user.uname, user.color);
     //session.publish("com.google.boat.onlogin", [user]);
-    return {user: user, can_join: canJoinQueue(user.uid)}
+    return login_result(user);
   };
+
+  var login_result = function(user){
+    var is_user_playing = Object.keys(players).some(
+      function(p_uid) {
+        return p_uid == user.uid;
+      }
+    );
+
+    return {
+      user: user, 
+      can_join: canJoinQueue(user.uid),
+      playing: is_user_playing
+    };
+  }
 
   var canJoinQueue = function(uid){
     //they can join if they're not queued and not playing
@@ -166,19 +180,38 @@ var LargeWall = (function() {
     var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
     
     //tryStartRound();
-    if(state == WAIT && !prepareCountDown.counting()){
-      prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-      prepareCountDown.start();      
+    if(state == WAIT && !roundCountDown.counting()){
+      //Make label visible and Display "Prepare" label for timer
+      //Using css for visibility preserves the height of the element in the layout
+      $(timer_label).css("visibility", "visible");
+      $(timer_label).html("Preparing for the round");
+      roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+      roundCountDown.start();      
     }
 
     return rounds_until_user_plays;
   };
+
+  var leaveQueue = function(args){
+    var user = lookup(args[0]);
+
+    if(!user.logged_in){
+      throw ["User "+args[0]+" can't leave queue if not logged in"];
+    }
+
+    deleteFromQueue(user);
+
+    updateQueueDisplay();  
+ 
+  }
   ////////////////////
 
   var onmove = function(args, kwargs, details) {
     var uid = args[0];
-    var animalId = players[uid].animalId;
-    moveAnimal(animalId, args[1]);
+    if(players[uid]){
+      var animalId = players[uid].animalId;
+      moveAnimal(animalId, args[1]);      
+    }
   };
 
   // Change user names
@@ -191,16 +224,8 @@ var LargeWall = (function() {
     console.log("User " + user.uid + " changed their name to " + new_name);
 
     //update anywhere that the user's name shows up
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
-    document.getElementById('queue_display').innerHTML = new EJS({
-      url: 'templates/queue.ejs'
-    }).render({
-      data: queue
-    });    
+    updatePlayersDisplay();
+    updateQueueDisplay();  
 
     return user.uname; //receipt
   };
@@ -213,7 +238,7 @@ var LargeWall = (function() {
 
   var tryStartRound = function() {
     // if we have enough players, we're not waiting, and we're not preparing.
-    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !prepareCountDown.counting()) {
+    if(queue.length >= config.MIN_PLAYERS && state == WAIT && !roundCountDown.counting()) {
       startRound();
     }
   };
@@ -236,8 +261,8 @@ var LargeWall = (function() {
     }
 
     //Timing
-    //
-    prepareCountDown.set(0, 'prepare', null);
+    //    
+    roundCountDown.cancel();
 
     roundCountDown.set(config.ROUND_DURATION / 1000, 'round', endRound);
 
@@ -246,27 +271,25 @@ var LargeWall = (function() {
       $('#get_ready').html("GO!");
       setTimeout(function(){
         $('#get_ready_timer_box').fadeOut();
-      }, 2000);
+      }, config.ROUND_DURATION * .1);
+      console.log("get ready timeout reached");
       startWaves(); // start the ACTION
       roundCountDown.start();
     });
-
+    //Display label "Round Duration"
+    $(timer_label).html("Round Duration");  
     getReadyCountDown.start();
     
-    //Hide scores at round startdeath
+    //Hide scores at round start
     if(document.getElementById('players_scores') !== null)
     {
       $('div#players_scores').fadeOut();
     }
 
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
+    updatePlayersDisplay();
     console.log("animals added");
 
-    session.publish('com.google.boat.roundStart', [], {
+    session.publish('com.google.boat.roundStart', Object.keys(players), {
       round_duration: config.ROUND_DURATION, 
       get_ready_duration: config.GET_READY_DURATION
     });
@@ -274,6 +297,7 @@ var LargeWall = (function() {
   };
 
   var startWaves = function(){
+    console.log("startWaves");
     var velocity = 1.4;
     var index = 0;
     
@@ -305,16 +329,21 @@ var LargeWall = (function() {
   };
 
   var stopWaves = function(){
+    leftPush(0);
     clearInterval(wave_interval);
+    wave_interval = null;
   }
 
   var endRound = function() {
     console.log("end Round");
     state = WAIT;
 
-    roundCountDown.set(0, 'round', null);
-    prepareCountDown.set(config.PREPARE_DURATION / 1000, 'prepare', tryStartRound);
-    prepareCountDown.start();
+    //roundCountDown.set(0, 'round', null);
+    roundCountDown.cancel();
+    roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
+    //Display "Prepare" label for timer
+    $(timer_label).html("Preparing for the round");    
+    roundCountDown.start();
 
     // Calculate Number of players currently on the boat
     var players_on_boat = 0;
@@ -358,22 +387,22 @@ var LargeWall = (function() {
 
     session.publish('com.google.boat.roundEnd', Object.keys(players), {duration: config.PREPARE_DURATION}); 
 
+
     // Reset the wave machine
     restart();
     
     // Clear players from current round
     players = {};
 
-    document.getElementById('players_display').innerHTML = new EJS({
-      url: 'templates/players.ejs'
-    }).render({
-      data: players
-    });
+    updatePlayersDisplay();
     round_start = null;
     
   };
 
   var restart = function() {
+    for(var uid in users){
+      users[uid].dead = false;
+    }
     resetGame();
     onPlayerDeath(playerDeathCallback);
   };
@@ -388,11 +417,7 @@ var LargeWall = (function() {
     if (!enqueued[user.uid]) {
       queue.push(user);
       enqueued[user.uid] = true;
-      document.getElementById('queue_display').innerHTML = new EJS({
-        url: 'templates/queue.ejs'
-      }).render({
-        data: queue
-      });
+      updateQueueDisplay();
     }
     return queue.length;
   };
@@ -400,32 +425,63 @@ var LargeWall = (function() {
   var popFromQueue = function() {
     var user = queue.shift();
     enqueued[user.uid] = false;
+    updateQueueDisplay();
+    return user;
+  }; 
+
+  var deleteFromQueue = function(user){
+    if(enqueued[user.uid]){
+      var idx_to_remove = null;
+      for(var i = 0, len = queue.length; i < len; i++){
+        if(queue[i].uid === user.uid){
+          // Found 'em!
+          idx_to_remove = i;
+          // Quit looking
+          break;
+        }
+      }
+      if(idx_to_remove !== null){
+        queue.splice(idx_to_remove, 1);
+        enqueued[user.uid] = false;               
+      }
+    } 
+    updateQueueDisplay();
+  }
+
+  // Convenience functions for rendering queue and player visualizations
+
+  var updateQueueDisplay = function(){
     document.getElementById('queue_display').innerHTML = new EJS({
       url: 'templates/queue.ejs'
     }).render({
       data: queue
     });
-    return user;
-  }; 
-
+  }
+  var updatePlayersDisplay = function(){
+    document.getElementById('players_display').innerHTML = new EJS({
+      url: 'templates/players.ejs'
+    }).render({
+      data: players
+    });
+  }
   // Callbacks
 
   var playerDeathCallback = function(uid) {
 
-    if(Object.keys(players).length>0)
+    var player_uids = Object.keys(players);
+
+    if(player_uids.length>0)
     {
       players[uid].time = new Date().getTime() - round_start;
       players[uid].dead = true;
-      console.log("Player " + uid + " is dead!");    
-          
-      var all_dead = true;
-
-      for (var uid in players) {
-        if(players[uid].dead===false)
-          all_dead = false;        
-      }
+      console.log("Player " + uid + " is dead!");       
+      
+      var all_dead = player_uids.every(function(uid){return players[uid].dead});
 
       if(all_dead){ // End the round early
+        console.info("End early!");
+        getReadyCountDown.set(0, 'get_ready', null);
+        $('#get_ready_timer_box').fadeOut();
         stopWaves();
         endRound();
       }      
@@ -487,19 +543,16 @@ var LargeWall = (function() {
     }).render({
       data: config
     });
-    document.getElementById('queue_display').innerHTML = new EJS({
-      url: 'templates/queue.ejs'
-    }).render({
-      data: queue
-    });
 
-    roundCountDown.set(0, 'round', null);
+    updateQueueDisplay();
+
+    roundCountDown.set(0, 'round', null);    
 
     session.register('com.google.boat.move', onmove);
     session.register('com.google.boat.login', login);
     session.register('com.google.boat.changeName', changeName);
     session.register('com.google.boat.joinQueue', joinQueue);
-
+    session.register('com.google.boat.leaveQueue', leaveQueue);
 
   };
 
