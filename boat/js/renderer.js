@@ -42,6 +42,9 @@ Renderer.prototype.draw = function() {
     var transform = body.GetTransform();
     for (var j = 0; j < maxFixtures; j++) {
       var fixture = body.fixtures[j];
+      if (fixture.isSensor) {
+        continue;
+      }
       var d = body.GetUserData();
       if (d != 0 && d != undefined) {
         r = d >> 16 & 0xFF;

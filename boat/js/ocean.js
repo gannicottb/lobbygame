@@ -79,7 +79,7 @@ function TestWaveMachine() {
   // boat_shape.vertices.push(new b2Vec2(-1.3, -0.15));
   // boat_shape.vertices.push(new b2Vec2(-1.6, -0.09));
   // boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
-  
+
 
   var boat_fixture = new b2FixtureDef();
   boat_fixture.friction = 2;
@@ -88,8 +88,6 @@ function TestWaveMachine() {
 
   this.boat_body.CreateFixtureFromDef(boat_fixture);
 
-  // Define a new property on boat_body called tag
-  this.boat_body.tag = "boat";
   //  
   console.log("boat userData: " + this.boat_body.GetUserData());
 
@@ -127,31 +125,32 @@ function TestWaveMachine() {
 TestWaveMachine.prototype.BeginContactBody = function(contact) {
   var fixtureA = contact.GetFixtureA();
   var fixtureB = contact.GetFixtureB();
- 
+
   // If the boat and a player are in contact, then reset the number of steps the player has been not touching
-  if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
+  if (fixtureA.body === this.boat_body && fixtureB.tag === "player") {
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
-    //console.log("Begin contact for Fixture B");
+    console.log(">> Begin contact for Fixture B");
   }
 
-  // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
-  //   fixtureA.body.touchingBoat = false;
-  //   console.log("Begin contact for Fixture A to bottom of boat!");
-  // }  
+  if (fixtureB.body === this.boat_body && fixtureA.tag === "player") {
+    fixtureA.body.stepsAway = 0;
+    fixtureA.body.touchingBoat = true;
+    console.log(">> Begin contact for Fixture A");
+  }  
 
-  if (fixtureA === this.sensor) {
-    var userData = fixtureB.body.GetUserData();
-    if (userData) {
-      this.touching[userData] = true;
-    }
-  }
-  if (fixtureB === this.sensor) {
-    var userData = fixtureB.body.GetUserData();
-    if (userData) {
-      this.touching[userData] = true;
-    }
-  }
+  // if (fixtureA === this.sensor) {
+  //   var userData = fixtureB.body.GetUserData();
+  //   if (userData) {
+  //     this.touching[userData] = true;
+  //   }
+  // }
+  // if (fixtureB === this.sensor) {
+  //   var userData = fixtureB.body.GetUserData();
+  //   if (userData) {
+  //     this.touching[userData] = true;
+  //   }
+  // }
 };
 
 TestWaveMachine.prototype.EndContactBody = function(contact) {
@@ -159,28 +158,28 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   var fixtureB = contact.GetFixtureB();
 
   // If the boat and a player stop touching, set the player flag
-  if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
+  if (fixtureA.body == this.boat_body && fixtureB.tag === "player") {
     fixtureB.body.touchingBoat = false;
-    //console.log("End contact for Fixture B");
+    console.log("<< End contact for Fixture B");
   }
 
-  // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
-  //   fixtureA.body.touchingBoat = false;
-  //   console.log("End contact for Fixture A to bottom of boat!");
-  // }  
+  if (fixtureB.body == this.boat_body && fixtureA.tag === "player") {
+    fixtureA.body.touchingBoat = false;
+    console.log("<< End contact for Fixture A");
+  }  
 
-  if (fixtureA === this.sensor) {
-    var userData = fixtureB.body.GetUserData();
-    if (userData) {
-      this.touching[userData] = false;
-    }
-  }
-  if (fixtureB === this.sensor) {
-    var userData = fixtureB.body.GetUserData();
-    if (userData) {
-      this.touching[userData] = false;
-    }
-  }
+  // if (fixtureA === this.sensor) {
+  //   var userData = fixtureB.body.GetUserData();
+  //   if (userData) {
+  //     this.touching[userData] = false;
+  //   }
+  // }
+  // if (fixtureB === this.sensor) {
+  //   var userData = fixtureB.body.GetUserData();
+  //   if (userData) {
+  //     this.touching[userData] = false;
+  //   }
+  // }
 };
 
 // Register death handler
@@ -286,7 +285,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   var offsetX = this.boat_body.GetWorldCenter().x + RandomFloat(-1, 1);
   var animal = {};
   animal.userId = uid;
-  
+
   //Define a chassis shape
   var chassis = new b2PolygonShape;
   chassis.vertices[0] = new b2Vec2(-0.15, -0.06);
@@ -306,7 +305,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   bd.type = b2_dynamicBody;
   bd.userData = color;
   bd.position.Set(offsetX, 2.0);
-  
+
   //Create the chassis body 
   var car = world.CreateBody(bd);
   car.CreateFixtureFromDef(carFixture);
@@ -315,8 +314,8 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
 
   //Now, let's make the wheel
   var circle = new b2CircleShape;
-  circle.radius = 0.1;  
-  var fd = new b2FixtureDef;  
+  circle.radius = 0.1;
+  var fd = new b2FixtureDef;
   fd.shape = circle;
   fd.density = 2.2;
   fd.friction = 5;
@@ -326,12 +325,14 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
-    //Add a sensor??  
-    // var sensor = new b2FixtureDef;  
-    // sensor.userData = 'sensor';
-    // sensor.shape = circle;
-    // sensor.isSensor = true;
-    // wheel1.CreateFixtureFromDef(sensor);
+  var sensorFd = new b2FixtureDef;
+  var sensorShap = new b2PolygonShape;
+  sensorShap.SetAsBoxXYCenterAngle(0.17, 0.12, new b2Vec2(0.0, 0.0), 0);
+  sensorFd.shape = sensorShap;
+  sensorFd.isSensor = true;
+  sensorFd.filter.groupIndex = -1;
+  var sensorFixture = car.CreateFixtureFromDef(sensorFd);
+  sensorFixture.tag = "player";
 
   animal.wheel = wheel1;
 
@@ -358,6 +359,7 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   if (this.animals[animal].isDead === true) return;
 
   var spring = this.animals[animal].spring;
+  console.log("Move animal: " + animal + " dir: " + direction);
   // var angle = this.boat_body.GetAngle();
   // console.log(angle);
   // var force = direction === 0 ? -0.1 : 0.1;
@@ -380,12 +382,12 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
 
 TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity) {
   this.wave_starter_l_velocity = velocity;
-  console.info("WaveStarter left set to",this.wave_starter_l_velocity);
+  console.info("WaveStarter left set to", this.wave_starter_l_velocity);
 }
 
 TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity) {
   this.wave_starter_r_velocity = velocity;
-  console.info("WaveStarter right set to",this.wave_starter_r_velocity);
+  console.info("WaveStarter right set to", this.wave_starter_r_velocity);
 
 }
 
