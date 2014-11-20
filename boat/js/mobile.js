@@ -195,12 +195,7 @@ var Mobile = (function() {
         document.title = user.uname + " - Wobble Boat";
 
         //Set background color
-        $(".wrap").css('backgroundColor', "#"+user.color.toString(16));
-
-        //Disable or enable the join queue button?
-        // if(result.can_join) {
-        //   switchToJoinQueue();
-        // } 
+        $(".wrap").css('backgroundColor', "#"+user.color.toString(16));        
 
         joinQueue();
         

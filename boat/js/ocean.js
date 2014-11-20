@@ -127,20 +127,18 @@ function TestWaveMachine() {
 TestWaveMachine.prototype.BeginContactBody = function(contact) {
   var fixtureA = contact.GetFixtureA();
   var fixtureB = contact.GetFixtureB();
-
+ 
   // If the boat and a player are in contact, then reset the number of steps the player has been not touching
   if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
-    console.log("Begin contact for Fixture B");
+    //console.log("Begin contact for Fixture B");
   }
 
-  // If the boat and a player are in contact, then reset the number of steps the player has been not touching
   // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
-  //   fixtureA.body.stepsAway = 0;
-  //   fixtureA.body.touchingBoat = true;
-  //   console.log("Begin contact for Fixture A");
-  // }
+  //   fixtureA.body.touchingBoat = false;
+  //   console.log("Begin contact for Fixture A to bottom of boat!");
+  // }  
 
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
@@ -163,13 +161,13 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   // If the boat and a player stop touching, set the player flag
   if (fixtureA.body.tag == "boat" && fixtureB.body.GetUserData()) {
     fixtureB.body.touchingBoat = false;
-    console.log("End contact for Fixture B");
+    //console.log("End contact for Fixture B");
   }
 
   // if (fixtureB.body.tag == "boat" && fixtureA.body.GetUserData()) {
   //   fixtureA.body.touchingBoat = false;
-  //   console.log("End contact for Fixture A");
-  // }
+  //   console.log("End contact for Fixture A to bottom of boat!");
+  // }  
 
   if (fixtureA === this.sensor) {
     var userData = fixtureB.body.GetUserData();
@@ -246,7 +244,7 @@ TestWaveMachine.prototype.Step = function() {
 
       animal.body.stepsAway++;
 
-      if(animal.body.stepsAway >= this.DEATH_THRESHOLD / 2) console.debug("Player steps away", animal.body.stepsAway);
+      //if(animal.body.stepsAway >= this.DEATH_THRESHOLD / 2) console.debug("Player steps away", animal.body.stepsAway);
 
       if (animal.body.stepsAway >= this.DEATH_THRESHOLD) {
 
@@ -288,29 +286,37 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   var offsetX = this.boat_body.GetWorldCenter().x + RandomFloat(-1, 1);
   var animal = {};
   animal.userId = uid;
+  
+  //Define a chassis shape
   var chassis = new b2PolygonShape;
   chassis.vertices[0] = new b2Vec2(-0.15, -0.05);
   chassis.vertices[1] = new b2Vec2(0.15, -0.05);
   chassis.vertices[2] = new b2Vec2(0.15, 0.05);
   chassis.vertices[3] = new b2Vec2(-0.15, 0.05);
 
-  bd = new b2BodyDef;
-  bd.type = b2_dynamicBody;
-  bd.userData = color;
-  bd.position.Set(offsetX, 2.0);
+  //Define a fixture with the chassis shape
   var carFixture = new b2FixtureDef;
   carFixture.shape = chassis;
   carFixture.density = 1.0;
   carFixture.filter.groupIndex = -1;
   // carFixture.friction = 10.0;
-  car = world.CreateBody(bd);
+
+  //Define a body 
+  bd = new b2BodyDef;
+  bd.type = b2_dynamicBody;
+  bd.userData = color;
+  bd.position.Set(offsetX, 2.0);
+  
+  //Create the chassis body 
+  var car = world.CreateBody(bd);
   car.CreateFixtureFromDef(carFixture);
   console.log("userData: " + car.GetUserData());
   animal.body = car;
 
+  //Now, let's make the wheel
   var circle = new b2CircleShape;
   circle.radius = 0.1;  
-  fd = new b2FixtureDef;
+  var fd = new b2FixtureDef;  
   fd.shape = circle;
   fd.density = 2.0;
   fd.friction = 5;
@@ -320,9 +326,16 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   wheel1 = world.CreateBody(bd);
   wheel1.CreateFixtureFromDef(fd);
 
+    //Add a sensor??  
+    // var sensor = new b2FixtureDef;  
+    // sensor.userData = 'sensor';
+    // sensor.shape = circle;
+    // sensor.isSensor = true;
+    // wheel1.CreateFixtureFromDef(sensor);
+
   animal.wheel = wheel1;
 
-  jd = new b2WheelJointDef;
+  var jd = new b2WheelJointDef;
   var axis = new b2Vec2(0, 1.0); // ?? why
 
   jd.motorSpeed = 0.0;
@@ -330,8 +343,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   jd.enableMotor = true;
   jd.frequencyHz = this.hz;
   jd.dampingRatio = this.zeta;
-  spring1 =
-    jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
+  var spring1 = jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
 
   animal.spring = spring1;
 
