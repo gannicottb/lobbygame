@@ -67,8 +67,8 @@ function TestWaveMachine() {
 
   var boat_shape = new b2PolygonShape();
   boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
-  boat_shape.vertices.push(new b2Vec2(1.8, -0.15));
-  boat_shape.vertices.push(new b2Vec2(-1.8, -0.15));
+  boat_shape.vertices.push(new b2Vec2(1.8, -0.17));
+  boat_shape.vertices.push(new b2Vec2(-1.8, -0.17));
   boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
 
   // boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
@@ -83,7 +83,7 @@ function TestWaveMachine() {
 
   var boat_fixture = new b2FixtureDef();
   boat_fixture.friction = 2;
-  boat_fixture.density = 0.3;
+  boat_fixture.density = 0.1;
   boat_fixture.shape = boat_shape;
 
   this.boat_body.CreateFixtureFromDef(boat_fixture);
@@ -276,10 +276,10 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   var animal = {};
   animal.userId = uid;
   var chassis = new b2PolygonShape;
-  chassis.vertices[0] = new b2Vec2(-0.15, -0.05);
-  chassis.vertices[1] = new b2Vec2(0.15, -0.05);
-  chassis.vertices[2] = new b2Vec2(0.15, 0.05);
-  chassis.vertices[3] = new b2Vec2(-0.15, 0.05);
+  chassis.vertices[0] = new b2Vec2(-0.15, -0.06);
+  chassis.vertices[1] = new b2Vec2(0.15, -0.06);
+  chassis.vertices[2] = new b2Vec2(0.15, 0.06);
+  chassis.vertices[3] = new b2Vec2(-0.15, 0.06);
 
   bd = new b2BodyDef;
   bd.type = b2_dynamicBody;
@@ -287,7 +287,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   bd.position.Set(offsetX, 2.0);
   var carFixture = new b2FixtureDef;
   carFixture.shape = chassis;
-  carFixture.density = 1.0;
+  carFixture.density = 2.2;
   carFixture.filter.groupIndex = -1;
   // carFixture.friction = 10.0;
   car = world.CreateBody(bd);
@@ -299,7 +299,7 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   circle.radius = 0.1;
   fd = new b2FixtureDef;
   fd.shape = circle;
-  fd.density = 2.0;
+  fd.density = 2.2;
   fd.friction = 5;
   fd.filter.groupIndex = -1;
 
