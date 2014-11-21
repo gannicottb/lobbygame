@@ -1,6 +1,7 @@
 <span>Configuration Params</span>
+<br />
 <% for(var p in data) { %>
 	<% if (data.hasOwnProperty(p)) { %>
-		<%= p %>: <%= data[p] %> |
+		<%= p %>: <%= data[p] %> <br />
 	<% } %>
 <% } %>

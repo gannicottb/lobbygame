@@ -1,5 +1,6 @@
-<span>
-	Wait Queue: head[
-		<%= data.map(function(usr){return "<span style=\"background-color: #" + usr.color.toString(16) + "\">" + usr.uname + "</span>"}).join(" | ") %>
-	]tail
-</span>
+<span><b>
+	Waiting to Play: [
+		<% i = 1 %>
+		<%= data.map(function(usr){return "<span style=\"background-color: #" + usr.color.toString(16) + "\">" + (i++) + ". " + usr.uname + "</span>"}).join("  ") %>
+	]
+</b></span>

@@ -1,6 +1,6 @@
 function TestWaveMachine() {
 
-  this.DEATH_THRESHOLD = 120; // 1 second (60 steps per second)
+  this.DEATH_THRESHOLD = 60; // 1 second (60 steps per second)
 
   camera.position.y = 0.7;
   camera.position.z = 3.5;

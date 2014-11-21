@@ -184,7 +184,7 @@ var LargeWall = (function() {
       //Make label visible and Display "Prepare" label for timer
       //Using css for visibility preserves the height of the element in the layout
       $(timer_label).css("visibility", "visible");
-      $(timer_label).html("Preparing for the round");
+      $(timer_label).html("Waiting for other players to join");
       roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
       roundCountDown.start();      
     }
@@ -277,7 +277,7 @@ var LargeWall = (function() {
       roundCountDown.start();
     });
     //Display label "Round Duration"
-    $(timer_label).html("Round Duration");  
+    $(timer_label).html("Round in Progress");  
     getReadyCountDown.start();
     
     //Hide scores at round start
@@ -342,7 +342,7 @@ var LargeWall = (function() {
     roundCountDown.cancel();
     roundCountDown.set(config.PREPARE_DURATION / 1000, 'round', tryStartRound);
     //Display "Prepare" label for timer
-    $(timer_label).html("Preparing for the round");    
+    $(timer_label).html("Waiting for players to join");    
     roundCountDown.start();
 
     // Calculate Number of players currently on the boat
@@ -547,6 +547,13 @@ var LargeWall = (function() {
     updateQueueDisplay();
 
     roundCountDown.set(0, 'round', null);    
+
+    if(state == WAIT){
+      //Make label visible and Display "Prepare" label for timer
+      //Using css for visibility preserves the height of the element in the layout
+      $(timer_label).css("visibility", "visible");
+      $(timer_label).html("Waiting for players to join");      
+    }
 
     session.register('com.google.boat.move', onmove);
     session.register('com.google.boat.login', login);
