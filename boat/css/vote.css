@@ -304,16 +304,16 @@ header {
   top: 75%;
   z-index: 1;
   background-color: white;
-  padding-bottom: .25%;
-  padding-top: .25%;
+  padding: .25%;
+  
 }
 .qr_code.left_corner{ 
   left: 1%;
-  padding-right: .25%;
+ 
 }
 .qr_code.right_corner{ 
   right: 1%;  
-  padding-left: .25%
+  
 }
 
 .bottom_pane{
