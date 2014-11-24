@@ -20,7 +20,7 @@ var LargeWall = (function() {
   var users = [], //uid -> user objects
     uidCounter = 0;
 
-  var roundCountDown = Timer(); //shouldn't this be new Timer()?
+  var roundCountDown = Timer();
   var prepareCountDown = Timer();      
   var getReadyCountDown = Timer();   
 
@@ -145,7 +145,6 @@ var LargeWall = (function() {
       user.logged_in = true // they had a valid id. set them as logged in.
     }
     console.log("Logged in: ", user.uname, user.color);
-    //session.publish("com.google.boat.onlogin", [user]);
     return login_result(user);
   };
 
@@ -179,7 +178,6 @@ var LargeWall = (function() {
     var ql = pushToQueue(user);
     var rounds_until_user_plays = Math.floor((ql - 1) / Math.min(queue.length, config.MAX_PLAYERS));
     
-    //tryStartRound();
     if(state == WAIT && !roundCountDown.counting()){
       //Make label visible and Display "Prepare" label for timer
       //Using css for visibility preserves the height of the element in the layout
@@ -244,8 +242,6 @@ var LargeWall = (function() {
   };
 
   var startRound = function() {
-    console.log("start Round");
-
     state = PROGRESS;
     round_start = new Date().getTime();
     var players_for_round = Math.min(queue.length, config.MAX_PLAYERS)
@@ -297,7 +293,6 @@ var LargeWall = (function() {
   };
 
   var startWaves = function(){
-    console.log("startWaves");
     var velocity = 1.4;
     var index = 0;
     
@@ -335,7 +330,6 @@ var LargeWall = (function() {
   }
 
   var endRound = function() {
-    console.log("end Round");
     state = WAIT;
 
     //roundCountDown.set(0, 'round', null);
@@ -505,8 +499,6 @@ var LargeWall = (function() {
     game_canvas[0].height = $('#frame').height();
 
     initTestbed({canvas: game_canvas[0]});
-
-    console.log("test bed initialized");
 
     //Find local IP and display QR Code  
     if(document.location.host.split(':')[0] == "localhost"){

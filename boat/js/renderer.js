@@ -1,3 +1,4 @@
+// Modified based on liquidfun testbed renderer.js
 var inv255 = .003921569;
 
 function Renderer() {
@@ -12,9 +13,9 @@ function Renderer() {
 
   this.currentVertex = 0;
   this.buffer = new THREE.Line(geometry,
-    new THREE.LineBasicMaterial({ vertexColors: true }), THREE.LinePieces);
-  // this.buffer2 = new THREE.Mesh(geometry,
-  //   new THREE.MeshBasicMaterial( { color: 0xff0000 } ));
+    new THREE.LineBasicMaterial({
+      vertexColors: true
+    }), THREE.LinePieces);
 
   this.circleVertices = [];
   this.circleResolution = 5;
@@ -45,6 +46,7 @@ Renderer.prototype.draw = function() {
       if (fixture.isSensor) {
         continue;
       }
+      // userData of a body is its color. If userData is undefined, draw with default color.
       var d = body.GetUserData();
       if (d != 0 && d != undefined) {
         r = d >> 16 & 0xFF;
@@ -54,11 +56,11 @@ Renderer.prototype.draw = function() {
         color.r = inv255 * r;
         color.g = inv255 * g;
         color.b = inv255 * b;
-        fixture.shape.draw2(transform, color);
+        fixture.shape.drawWithColor(transform, color);
       } else {
         fixture.shape.draw(transform);
       }
-      
+
     }
   }
 
@@ -158,14 +160,14 @@ Renderer.prototype.transformVerticesAndInsert = function(vertices, transform, r,
 b2CircleShape.prototype.draw = function(transform) {
   var circlePosition = this.position,
     center = new b2Vec2(circlePosition.x, circlePosition.y);
- // b2Vec2.Mul(center, transform, center);
+  // b2Vec2.Mul(center, transform, center);
   renderer.insertCircleVertices(transform, this.radius, center.x, center.y, 0, 0, 0, 5);
 };
 
-b2CircleShape.prototype.draw2 = function(transform, color) {
+b2CircleShape.prototype.drawWithColor = function(transform, color) {
   var circlePosition = this.position,
     center = new b2Vec2(circlePosition.x, circlePosition.y);
- // b2Vec2.Mul(center, transform, center);
+  // b2Vec2.Mul(center, transform, center);
   renderer.insertCircleVertices(transform, this.radius, center.x, center.y, color.r, color.g, color.b, 5);
   renderer.insertCircleVertices(transform, this.radius * 0.75, center.x, center.y, color.r, color.g, color.b, 5);
   renderer.insertCircleVertices(transform, this.radius * 0.5, center.x, center.y, color.r, color.g, color.b, 5);
@@ -176,7 +178,7 @@ b2ChainShape.prototype.draw = function(transform) {
   renderer.transformVerticesAndInsert(this.vertices, transform, 0, 0, 0);
 };
 
-b2ChainShape.prototype.draw2 = function(transform, color) {
+b2ChainShape.prototype.drawWithColor = function(transform, color) {
   renderer.transformVerticesAndInsert(this.vertices, transform, color.r, color.g, color.b);
 };
 
@@ -185,7 +187,7 @@ b2EdgeShape.prototype.draw = function(transform) {
   renderer.transformAndInsert(this.vertex1, this.vertex2, transform, 0, 0, 0);
 };
 
-b2EdgeShape.prototype.draw2 = function(transform, color) {
+b2EdgeShape.prototype.drawWithColor = function(transform, color) {
   renderer.transformAndInsert(this.vertex1, this.vertex2, transform, color.r, color.g, color.b);
 };
 
@@ -198,11 +200,11 @@ b2PolygonShape.prototype.draw = function(transform) {
   var positions = renderer.positions;
   var last = (renderer.currentVertex - 1) * 3;
   renderer.insertLine(positions[last], positions[last + 1],
-                      positions[zPosition], positions[zPosition + 1],
-                      0, 0, 0);
+    positions[zPosition], positions[zPosition + 1],
+    0, 0, 0);
 };
 
-b2PolygonShape.prototype.draw2 = function(transform, color) {
+b2PolygonShape.prototype.drawWithColor = function(transform, color) {
   var zPosition = renderer.currentVertex * 3;
   renderer.transformVerticesAndInsert(this.vertices, transform, color.r, color.g, color.b);
 
@@ -210,8 +212,8 @@ b2PolygonShape.prototype.draw2 = function(transform, color) {
   var positions = renderer.positions;
   var last = (renderer.currentVertex - 1) * 3;
   renderer.insertLine(positions[last], positions[last + 1],
-                      positions[zPosition], positions[zPosition + 1],
-                      color.r, color.g, color.b);
+    positions[zPosition], positions[zPosition + 1],
+    color.r, color.g, color.b);
 };
 
 

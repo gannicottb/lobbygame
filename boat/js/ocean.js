@@ -5,23 +5,25 @@ function TestWaveMachine() {
   camera.position.y = 0.7;
   camera.position.z = 3.5;
 
-  this.hz = 4;
-  this.zeta = 0.7;
-  this.speed = 5;
+  this.animalSpeed = 5;
 
-  this.wave_starter_l_velocity = 0;
-  this.wave_starter_r_velocity = 0;
+  // There are two ways of generating waves: 1. use two wave pushers; 2. tilt the box that holds the water
   this.useWaveStarter = false;
+  // left wave pusher velocity
+  this.wave_starter_l_velocity = 0;
+  // right wave pusher velocity
+  this.wave_starter_r_velocity = 0;
+
 
   this.bd = new b2BodyDef();
   var ground = world.CreateBody(this.bd);
-
+  // If we use wave pushers to generate the waves, the box should be static; otherwise, dynamic.
   this.bd.type = this.useWaveStarter ? b2_staticBody : b2_dynamicBody;
   this.bd.allowSleep = false;
   this.bd.position.Set(0, 1);
   var body = world.CreateBody(this.bd);
 
-
+  // Create the box that holds the water based on which wave generating method we are using.
   if (!this.useWaveStarter) {
     var b1 = new b2PolygonShape();
     b1.SetAsBoxXYCenterAngle(0.05, 3, new b2Vec2(5, 0), 0);
@@ -55,22 +57,20 @@ function TestWaveMachine() {
     this.waveStarterR.CreateFixtureFromShape(waveStarterBoardShape, 100);
   }
 
-
   var boatBodyRef = new b2BodyDef();
   boatBodyRef.type = b2_dynamicBody;
   boatBodyRef.allowSleep = false;
   boatBodyRef.position.Set(0, 2);
   boatBodyRef.userData = 0xffffff;
-  // boat body
   this.boat_body = world.CreateBody(boatBodyRef);
-
-
   var boat_shape = new b2PolygonShape();
+
   boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
   boat_shape.vertices.push(new b2Vec2(1.8, -0.17));
   boat_shape.vertices.push(new b2Vec2(-1.8, -0.17));
   boat_shape.vertices.push(new b2Vec2(-1.8, 0.00));
 
+  // boat with a concave hull
   // boat_shape.vertices.push(new b2Vec2(1.8, 0.00));
   // boat_shape.vertices.push(new b2Vec2(1.6, -0.09));
   // boat_shape.vertices.push(new b2Vec2(1.3, -0.15));
@@ -87,9 +87,6 @@ function TestWaveMachine() {
   boat_fixture.shape = boat_shape;
 
   this.boat_body.CreateFixtureFromDef(boat_fixture);
-
-  //  
-  console.log("boat userData: " + this.boat_body.GetUserData());
 
   var jd = new b2RevoluteJointDef();
   jd.motorSpeed = 0.05 * Math.PI;
@@ -130,27 +127,12 @@ TestWaveMachine.prototype.BeginContactBody = function(contact) {
   if (fixtureA.body === this.boat_body && fixtureB.tag === "player") {
     fixtureB.body.stepsAway = 0;
     fixtureB.body.touchingBoat = true;
-    console.log(">> Begin contact for Fixture B");
   }
 
   if (fixtureB.body === this.boat_body && fixtureA.tag === "player") {
     fixtureA.body.stepsAway = 0;
     fixtureA.body.touchingBoat = true;
-    console.log(">> Begin contact for Fixture A");
-  }  
-
-  // if (fixtureA === this.sensor) {
-  //   var userData = fixtureB.body.GetUserData();
-  //   if (userData) {
-  //     this.touching[userData] = true;
-  //   }
-  // }
-  // if (fixtureB === this.sensor) {
-  //   var userData = fixtureB.body.GetUserData();
-  //   if (userData) {
-  //     this.touching[userData] = true;
-  //   }
-  // }
+  }
 };
 
 TestWaveMachine.prototype.EndContactBody = function(contact) {
@@ -160,26 +142,11 @@ TestWaveMachine.prototype.EndContactBody = function(contact) {
   // If the boat and a player stop touching, set the player flag
   if (fixtureA.body == this.boat_body && fixtureB.tag === "player") {
     fixtureB.body.touchingBoat = false;
-    console.log("<< End contact for Fixture B");
   }
 
   if (fixtureB.body == this.boat_body && fixtureA.tag === "player") {
     fixtureA.body.touchingBoat = false;
-    console.log("<< End contact for Fixture A");
-  }  
-
-  // if (fixtureA === this.sensor) {
-  //   var userData = fixtureB.body.GetUserData();
-  //   if (userData) {
-  //     this.touching[userData] = false;
-  //   }
-  // }
-  // if (fixtureB === this.sensor) {
-  //   var userData = fixtureB.body.GetUserData();
-  //   if (userData) {
-  //     this.touching[userData] = false;
-  //   }
-  // }
+  }
 };
 
 // Register death handler
@@ -187,6 +154,7 @@ TestWaveMachine.prototype.OnDeath = function(callback) {
   this.deathHandler = callback;
 };
 
+// Pour a block of water particles onto the boat
 TestWaveMachine.prototype.Rain = function() {
   var psd = new b2ParticleSystemDef();
   psd.radius = 0.06;
@@ -196,7 +164,6 @@ TestWaveMachine.prototype.Rain = function() {
   var box = new b2PolygonShape();
 
   box.SetAsBoxXYCenterAngle(0.06, 0.06, new b2Vec2(this.boat_body.GetWorldCenter().x, 3), 0);
-
 
   var particleGroupDef = new b2ParticleGroupDef();
 
@@ -210,9 +177,7 @@ TestWaveMachine.prototype.Step = function() {
   world.Step(timeStep, velocityIterations, positionIterations);
   this.time += 1 / 50;
 
-  // Wave machine speed
-  this.joint.SetMotorSpeed(0.02 * this.wave_starter_l_velocity * Math.cos(this.time) * Math.PI);
-
+  // Set wave machine speed
   if (this.useWaveStarter) {
     if (this.waveStarterL.GetWorldCenter().x <= -7) {
       this.directionL = 1;
@@ -227,6 +192,8 @@ TestWaveMachine.prototype.Step = function() {
       this.directionR = 0.5;
     }
     this.waveStarterR.SetLinearVelocity(new b2Vec2(this.wave_starter_r_velocity * this.directionR, 0));
+  } else {
+    this.joint.SetMotorSpeed(0.02 * this.wave_starter_l_velocity * Math.cos(this.time) * Math.PI);
   }
 
   // The camera should follow the boat
@@ -243,8 +210,6 @@ TestWaveMachine.prototype.Step = function() {
 
       animal.body.stepsAway++;
 
-      //if(animal.body.stepsAway >= this.DEATH_THRESHOLD / 2) console.debug("Player steps away", animal.body.stepsAway);
-
       if (animal.body.stepsAway >= this.DEATH_THRESHOLD) {
 
         animal.spring.SetMotorSpeed(0);
@@ -259,7 +224,7 @@ TestWaveMachine.prototype.Step = function() {
           // This line is JUST for Three.js
           scene.remove(animal.body.fixtures[f].graphic);
         }
-        console.log("animal " + i + " will be removed:" + animal);
+
         // Need to delete joint first, otherwise it will crash
         world.DestroyJoint(animal.spring);
         world.DestroyBody(animal.body);
@@ -282,6 +247,7 @@ TestWaveMachine.prototype.ResetWorld = function() {
 
 TestWaveMachine.prototype.AddAnimal = function(color, uid) {
 
+  // Drop the animal at a random place on the boat
   var offsetX = this.boat_body.GetWorldCenter().x + RandomFloat(-1, 1);
   var animal = {};
   animal.userId = uid;
@@ -298,7 +264,6 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   carFixture.shape = chassis;
   carFixture.density = 2.2;
   carFixture.filter.groupIndex = -1;
-  // carFixture.friction = 10.0;
 
   //Define a body 
   bd = new b2BodyDef;
@@ -309,7 +274,6 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   //Create the chassis body 
   var car = world.CreateBody(bd);
   car.CreateFixtureFromDef(carFixture);
-  console.log("userData: " + car.GetUserData());
   animal.body = car;
 
   //Now, let's make the wheel
@@ -337,21 +301,16 @@ TestWaveMachine.prototype.AddAnimal = function(color, uid) {
   animal.wheel = wheel1;
 
   var jd = new b2WheelJointDef;
-  var axis = new b2Vec2(0, 1.0); // ?? why
+  var axis = new b2Vec2(0, 1.0);
 
   jd.motorSpeed = 0.0;
   jd.maxMotorTorque = 20.0;
   jd.enableMotor = true;
-  jd.frequencyHz = this.hz;
-  jd.dampingRatio = this.zeta;
-  var spring1 = jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
-
-  animal.spring = spring1;
+  jd.frequencyHz = 4;
+  jd.dampingRatio = 0.7;
+  animal.spring = jd.InitializeAndCreate(car, wheel1, wheel1.GetPosition(), axis);
 
   this.animals.push(animal);
-  // console.log("camera pos: x = " + camera.position.x + " y = " + camera.position.y);
-  // console.log("boat pos: x = " + this.boat_body.GetWorldCenter().x + " y = " + this.boat_body.GetWorldCenter().y);
-
 }
 
 TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
@@ -359,55 +318,15 @@ TestWaveMachine.prototype.MoveAnimal = function(animal, direction) {
   if (this.animals[animal].isDead === true) return;
 
   var spring = this.animals[animal].spring;
-  console.log("Move animal: " + animal + " dir: " + direction);
-  // var angle = this.boat_body.GetAngle();
-  // console.log(angle);
-  // var force = direction === 0 ? -0.1 : 0.1;
-  // var forceX = force * Math.cos(angle);
-  // var forceY = force * Math.sin(angle);
-  // var f = dog_body.GetWorldVector(new b2Vec2(forceX, forceY));
-  // dog_body.ApplyAngularImpulse(force, true);
-  // console.log("dog pos: x = " + dog_body.GetWorldCenter().x + " y = " + dog_body.GetWorldCenter().y);
-  // var vect = new b2Vec2(dog_body.GetWorldCenter().x + forceX, dog_body.GetWorldCenter().y + forceY);
-  // dog_body.SetTransform(vect, 0);
-  // console.log("new dog pos: x = " + dog_body.GetWorldCenter().x + " y = " + dog_body.GetWorldCenter().y);
-  spring.SetMotorSpeed(direction * this.speed);
-  // var horForce = direction < 2 ? (direction == 0 ? -10 : 10) : 0;
-  // var verForce = direction < 2 ? 0 : (direction == 2 ? 10 : -10);
-
-  // var f = this.animals[animal].body.GetWorldVector(new b2Vec2(horForce, verForce));
-  // var p = this.animals[animal].body.GetWorldCenter();
-  // this.animals[animal].body.ApplyForce(f, p, true);
+  spring.SetMotorSpeed(direction * this.animalSpeed);
 };
 
 TestWaveMachine.prototype.setWaveStarterLeftVelocity = function(velocity) {
   this.wave_starter_l_velocity = velocity;
   console.info("WaveStarter left set to", this.wave_starter_l_velocity);
-}
+};
 
 TestWaveMachine.prototype.setWaveStarterRightVelocity = function(velocity) {
   this.wave_starter_r_velocity = velocity;
   console.info("WaveStarter right set to", this.wave_starter_r_velocity);
-
-}
-
-// Only for testing
-TestWaveMachine.prototype.Keyboard = function(char) {
-  switch (char) {
-    case 'a':
-      this.MoveAnimal(0, 1);
-      break;
-    case 's':
-      this.AddAnimal();
-      break;
-    case 'd':
-      this.MoveAnimal(0, -1);
-      break;
-    case 'w':
-      this.MoveAnimal(0, 0);
-      break;
-    case 'x':
-      this.MoveAnimal(0, 0);
-      break;
-  }
 };
